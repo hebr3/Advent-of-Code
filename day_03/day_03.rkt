@@ -31,3 +31,6 @@
 (last
  (for/list ([i 277678])
    (spiral)))
+
+;; Part 2 found on oeis
+;; https://oeis.org/A141481
