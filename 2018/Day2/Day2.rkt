@@ -1,4 +1,5 @@
 #lang racket
+(require threading)
 
 (define test1
   (list "abcdef"
@@ -9,29 +10,6 @@
         "abcdee"
         "ababab"))
 
-(define (count-num num str)
-  (count (λ (x) x)
-         (map (λ (x) (= num (length x)))
-              (group-by (λ (x) x) (string->list str)))))
-
-(define (count2 x)
-  (count-num 2 x))
-(define (count3 x)
-  (count-num 3 x))
-
-(* (count (λ (x) (< 0 x))
-          (map count2 test1))
-   (count (λ (x) (< 0 x))
-          (map count3 test1)))
-
-(define input
-  (file->lines "input.txt"))
-
-(* (count (λ (x) (< 0 x))
-          (map count2 input))
-   (count (λ (x) (< 0 x))
-          (map count3 input)))
-
 (define test2
   (list "abcde"
         "fghij"
@@ -41,5 +19,68 @@
         "axcye"
         "wvxyz"))
 
-(let ([F (car test2)][S (cadr test2)])
-  (for/list ([f F][s S]) (char=? f s)))
+(define data
+  (~> "input.txt"
+      open-input-file
+      (read-line _ 'return)
+      (string-split _ "\n")))
+
+(define (not-one? x)
+  (not (= 1 x)))
+
+(define (has-two? list-of-numbers)
+  (member 2 list-of-numbers))
+
+(define (has-three? list-of-numbers)
+  (member 3 list-of-numbers))
+
+(define (find-groups str)
+  (~> str
+      string->list
+      (sort _ char<?)
+      (group-by identity _)
+      (map length _)
+      (filter not-one? _)
+      remove-duplicates))
+
+(define (close-match string1 string2)
+  (define (shared-char s1 s2)
+    (apply string (for/list ([i s1][j s2]) (if (char=? i j) i #\space))))
+  (define (remove-spaces str)
+    (string-replace str " " ""))
+  (let ([matches (shared-char string1 string2)])
+    (~> matches
+        remove-spaces
+        string-length
+        (= _ (sub1 (string-length string1)))
+        (if _
+            (remove-spaces matches)
+            #f))))
+
+(define (find-close-match list-of-strings)
+  (or (for/or ([i (rest list-of-strings)])
+        (close-match (first list-of-strings) i))
+      (find-close-match (rest list-of-strings))))
+
+(display "test: ")
+(displayln
+ (~> test1
+     (map find-groups _)
+     ((λ (x) (* (count has-three? x) (count has-two? x))) _)))
+
+(display "test2: ")
+(displayln
+ (~> test2
+     find-close-match))
+
+(display "one: ")
+(displayln
+ (~> data
+     (map find-groups _)
+     ((λ (x) (* (count has-three? x) (count has-two? x))) _)))
+
+(display "two: ")
+(displayln
+ (~> data
+     find-close-match))
+
