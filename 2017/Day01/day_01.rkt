@@ -1,29 +1,31 @@
 #lang racket
 (require threading)
 
-(define (char->int c)
-  (string->number (string c)))
+(define data
+  (~> "input.txt"
+      open-input-file
+      read-line
+      (string-split _ "")
+      (map string->number _)
+      (filter (λ (x) x) _)))
 
-(let* ([in (file->list "input.txt" #:mode 'text)]
-       [num (number->string (car in))]
-       [nums (string->list num)]
-       [num-list (map char->int nums)]
-       [n (length num-list)]
-       [fst (list (car num-list))]
-       [rst (rest num-list)]
-       [num-list2 (append rst fst)]
-       [one (for/sum ([i num-list][j num-list2])
-              (if (= i j) i 0))]
-       [fst2 (take num-list (/ n 2))]
-       [rst2 (drop num-list (/ n 2))]
-       [num-list3 (append rst2 fst2)]
-       [two (for/sum ([i num-list][j num-list3])
-              (if (= i j) i 0))])
-  (list one two))
+(display "one: ")
+(displayln 
+ (let ([N (length data)])
+   (for/sum ([i (range N)])
+     (let ([x (list-ref data i)]
+           [y (list-ref data (modulo (add1 i) N))])
+       (if (= x y)
+           x
+           0)))))
 
-;(~> "input.txt"
-;    file->list
-;    car
-;    number->string
-;    string->list
-;    (map char->int _))
+(display "two: ")
+(displayln
+ (let* ([N (length data)]
+        [N/2 (/ N 2)])
+   (for/sum ([i (range N)])
+     (let ([x (list-ref data i)]
+           [y (list-ref data (modulo (+ i N/2) N))])
+       (if (= x y)
+           x
+           0)))))
