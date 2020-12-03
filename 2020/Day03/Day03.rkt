@@ -20,73 +20,69 @@
       open-input-file
       (read-line _ 'return-linefeed)))
 
-(define (tree? str count)
-  (let ([L (string->list str)])
-    (char=? #\# (list-ref L (modulo count (length L)))))) 
+(define (tree? str offset)
+  (~> (string-ref str (modulo offset (string-length str)))
+      (char=? #\#)))
 
-(define (find-trees list-of-strings val)
-  (for/list ([s list-of-strings]
-             [i (length list-of-strings)])
-    (and #t (tree? s (* i val)))))
+(define (find-trees list-of-strings slope)
+  (for/sum ([s list-of-strings]
+            [i (length list-of-strings)])
+    (if (tree? s (* i slope)) 1 0)))
 
 (define (find-trees2 list-of-strings val)
-  (for/list ([s list-of-strings]
-             [i (length list-of-strings)])
-    (and (even? i) (tree? s (* i (/ val 2))))))
+  (for/sum ([s list-of-strings]
+            [i (length list-of-strings)])
+    (if (and (even? i)
+             (tree? s (* i val)))
+        1 0)))
+
 
 (display "test 1: ")
-(* (~> test
-       (string-split _ "\n")
-       (find-trees _ 1)
-       (count identity _))
-   (~> test
-       (string-split _ "\n")
-       (find-trees _ 3)
-       (count identity _))
-
-   (~> test
-       (string-split _ "\n")
-       (find-trees _ 5)
-       (count identity _))
-
-   (~> test
-       (string-split _ "\n")
-       (find-trees _ 7)
-       (count identity _))
-
-   (~> test
-       (string-split _ "\n")
-       (find-trees2 _ 1)
-       (count identity _)))
+(~> test
+    (string-split _ "\n")
+    (find-trees _ 3))
 
 (display "one: ")
+(~> data
+    (string-split _ "\n")
+    (find-trees _ 3))
+
+(display "test 2: ")
+(* (~> test
+       (string-split _ "\n")
+       (find-trees _ 1))
+   (~> test
+       (string-split _ "\n")
+       (find-trees _ 3))
+
+   (~> test
+       (string-split _ "\n")
+       (find-trees _ 5))
+
+   (~> test
+       (string-split _ "\n")
+       (find-trees _ 7))
+
+   (~> test
+       (string-split _ "\n")
+       (find-trees2 _ 1/2)))
+
+(display "two: ")
 (* (~> data
        (string-split _ "\n")
-       (find-trees _ 1)
-       (count identity _))
+       (find-trees _ 1))
    (~> data
        (string-split _ "\n")
-       (find-trees _ 3)
-       (count identity _))
+       (find-trees _ 3))
 
    (~> data
        (string-split _ "\n")
-       (find-trees _ 5)
-       (count identity _))
+       (find-trees _ 5))
 
    (~> data
        (string-split _ "\n")
-       (find-trees _ 7)
-       (count identity _))
+       (find-trees _ 7))
 
    (~> data
        (string-split _ "\n")
-       (find-trees2 _ 1)
-       (count identity _)))
-;(display "test 2: ")
-;(~> test
-;    (string-split _ "\n")
-;    find-trees-for-slopes)
-
-;(display "two: ")
-;(~> data)
+       (find-trees2 _ 1/2)))
