@@ -1,12 +1,14 @@
 #lang racket
 (require threading)
 (require racket/match)
+(require rackunit)
 
 (define (file->list-of-strings filename)
   (~> filename
       open-input-file
       (read-line 'return-linefeed)))
 
+;; Functions
 (define (boarding-pass->seat-id str)
   (match-let ([(list a b c d e f g x y z)
                (string->list str)])
@@ -29,19 +31,26 @@
          (not (member i list-of-seats))
          i)))
 
+;; Test
 (define test
   "FBFBBFFRLR
 FFFBBBFRRR
 BBFFBBFRLL")
 
-(define data (file->list-of-strings "input.txt"))
+(check-eq? (boarding-pass->seat-id "FBFBBFFRLR")
+           357)
+(check-eq? (boarding-pass->seat-id "FFFBBBFRRR")
+           119)
+(check-eq? (boarding-pass->seat-id "BBFFBBFRLL")
+           820)
 
 (display "test 1: ")
 (~> test
     (string-split _ "\n")
-    (map boarding-pass->seat-id _)
-    (sort _ >)
-    first)
+    (map boarding-pass->seat-id _))
+
+;; Puzzle
+(define data (file->list-of-strings "input.txt"))
 
 (display "one: ")
 (~> data
