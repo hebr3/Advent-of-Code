@@ -1,69 +1,87 @@
 #lang racket
 (require threading)
 (require racket/match)
+(require rackunit)
 
 ;; Prep
-(define (file->list-of-strings filename)
+(define (file->vector-of-char filename)
   (~> filename
       open-input-file
       (read-line 'return-linefeed)
-      (string-split "\n")))
+      (string-split "\n")
+      (map (λ (x) (string->list x)) _)
+      (map (λ (x) (list->vector x)) _)
+      list->vector))
 
-(define (test->list-of-strings str)
-  (string-split str "\n"))
-
-;; Structs
+(define (test->vector-of-char str)
+  (~> str
+      (string-split "\n")
+      (map (λ (x) (string->list x)) _)
+      (map (λ (x) (list->vector x)) _)
+      list->vector))
 
 ;; Functions
-(define (list-ref-xy L x y)
-  (list-ref (list-ref L y) x))  
+(define (vector-ref-xy vec x y)
+  (vector-ref (vector-ref vec y) x))
 
-(define (empty-seat? x y list-of-list-of-seats)
-  (let ([Y (length list-of-list-of-seats)]
-        [X (length (first list-of-list-of-seats))])
-    (or (< x 0) (< y 0) (= x X) (= y Y)
-        (char=? #\L (list-ref-xy list-of-list-of-seats x y))
-        (char=? #\. (list-ref-xy list-of-list-of-seats x y)))))
+(define (get-dimensions vec)
+  (list (vector-length (vector-ref vec 0)) (vector-length vec)))
 
-(define (count-neighbors x y list-of-list-of-seats)
-  (+ (if (empty-seat? (sub1 x) (sub1 y) list-of-list-of-seats) 0 1)
-     (if (empty-seat? x (sub1 y) list-of-list-of-seats) 0 1)
-     (if (empty-seat? (add1 x) (sub1 y) list-of-list-of-seats) 0 1)
-       
-     (if (empty-seat? (sub1 x) y list-of-list-of-seats) 0 1)
-     (if (empty-seat? (add1 x) y list-of-list-of-seats) 0 1)
-       
-     (if (empty-seat? (sub1 x) (add1 y) list-of-list-of-seats) 0 1)
-     (if (empty-seat? x (add1 y) list-of-list-of-seats) 0 1)
-     (if (empty-seat? (add1 x) (add1 y) list-of-list-of-seats) 0 1)))
+(define (count-neighbors vec x y)
+  (match-let ([(list X Y) (get-dimensions vec)])
+    (for*/sum ([i '(-1 0 1)]
+               [j '(-1 0 1)]
+               #:when (not (= 0 i j)))
+      (let ([x* (+ x i)][y* (+ y j)])
+        (cond
+          [(and (<= 0 x* (sub1 X))
+                (<= 0 y* (sub1 Y))
+                (char=? #\# (vector-ref-xy vec x* y*)))
+           1]
+          [else 0])))))
 
-(define (update-seat x y list-of-list-of-seats)
-  (let ([S (list-ref-xy list-of-list-of-seats x y)]
-        [Y (length list-of-list-of-seats)]
-        [X (length (first list-of-list-of-seats))])        
+(define (update-seat vec x y)
+  (define (floor? c) (char=? #\. c))
+  (define (occupied-seat? c) (char=? #\# c))
+  (define (empty-seat? c) (char=? #\L c))
+  (match-let* ([(list X Y) (get-dimensions vec)]
+               [S (vector-ref-xy vec x y)]
+               [C (count-neighbors vec x y)])
     (cond
-      [(char=? #\. S) #\.]
-      [(and (char=? #\L S)
-            (zero? (count-neighbors x y list-of-list-of-seats))) #\#]
-      [(char=? #\L S) #\L]
-      [(and (char=? #\# S)
-            (< 3 (count-neighbors x y list-of-list-of-seats))) #\L]
-      [else #\#])))
+      [(floor? S) #\.]
+      [(and (occupied-seat? S) (< 3 C)) #\L]
+      [(occupied-seat? S) #\#]
+      [(zero? C) #\#]
+      [else #\L])))
 
+(define (update-seats vec)
+  (match-let ([(list X Y) (get-dimensions vec)])
+    (for/vector ([y Y])
+      (for/vector ([x X])
+        (update-seat vec x y)))))
 
+(define (count-occupied-seats vec)
+  (define (occupied-seat? c) (char=? #\# c))
+  (for/sum ([i vec])
+    (vector-count occupied-seat? i)))
 
-(define (update-list list-of-list-of-seats cnt)
-  (define (iter lst)
-    (for/list ([y (length lst)])
-      (for/list ([x (length (first lst))])
-        (update-seat x y lst))))
-  (let* ([next (iter list-of-list-of-seats)]
-         [cnt* (count (λ (x) (char=? #\# x)) (flatten list-of-list-of-seats))])
-    (if (= cnt cnt*)
-        (displayln cnt*)
-        (update-list next cnt*))))
+(define (find-fixed-point-for-seats vec C)
+  (let ([C* (count-occupied-seats vec)])
+    (cond
+      [(= C C*) C]
+      [else (find-fixed-point-for-seats (update-seats vec) C*)])))
+
+(define (display-seats vec)
+  (for ([i  (~>> vec
+                 vector->list
+                 (map (λ (x) (apply string (vector->list x)))))])
+    (displayln i)))
 
 ;; Data
+(define data
+  (~>> "input.txt"
+       file->vector-of-char))
+
 (define test
   (~>> "L.LL.LL.LL
 LLLLLLL.LL
@@ -74,23 +92,47 @@ L.LLLLL.LL
 ..L.L.....
 LLLLLLLLLL
 L.LLLLLL.L
-L.LLLLL.LL"
-       test->list-of-strings
-       (map string->list)))
+L.LLLLL.LL
+"
+       test->vector-of-char))
 
-(define data
-  (~>> "input.txt"
-       file->list-of-strings
-       (map string->list)))
+(define r1
+  (~>> "#.##.##.##
+#######.##
+#.#.#..#..
+####.##.##
+#.##.##.##
+#.#####.##
+..#.#.....
+##########
+#.######.#
+#.#####.##
+"
+       test->vector-of-char))
+
+(define r2
+  (~>> "#.LL.L#.##
+#LLLLLL.L#
+L.L.L..L..
+#LLL.LL.L#
+#.LL.LL.LL
+#.LLLL#.##
+..L.L.....
+#LLLLLLLL#
+#.LLLLLL.L
+#.#LLLL.##
+"
+       test->vector-of-char))
 
 ;; Puzzle
 (display "test 1: ")
 (~> test
-    (update-list -1))
+    (find-fixed-point-for-seats -1))
 
 (display "one: ")
-(~> data     
-    (update-list -1))
+(time
+(~> data
+    (find-fixed-point-for-seats -1)))
 
 ;(display "test 2: ")
 ;(~>> test)
@@ -98,3 +140,39 @@ L.LLLLL.LL"
 ;(display "two: ")
 ;(~>> data)
 
+;; Unit Test
+(check-equal? (vector-ref-xy test 1 0)
+              #\.)
+(check-equal? (vector-ref-xy test 1 1)
+              #\L)
+(check-equal? (vector-ref-xy test 1 2)
+              #\.)
+
+(check-equal? (get-dimensions test)
+              '(10 10))
+(check-equal? (get-dimensions data)
+              '(96 91))
+
+(check-equal? (count-neighbors test 0 0)
+              0)
+(check-equal? (count-neighbors r1 0 0)
+              2)
+
+(check-equal? (update-seat test 0 0)
+              #\#)
+(check-equal? (update-seat test 1 0)
+              #\.)
+
+(check-equal? (update-seats test)
+              r1)
+(check-equal? (update-seats r1)
+              r2)
+
+(check-equal? (find-fixed-point-for-seats test -1)
+              37)
+
+
+(check-equal? (vector-ref-xy data 0 0)
+              #\L)
+(check-equal? (vector-ref-xy data 0 1)
+              #\.)
