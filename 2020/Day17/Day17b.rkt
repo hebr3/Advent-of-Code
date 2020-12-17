@@ -23,24 +23,25 @@
   (for* ([l (length loloc)]
          [s (length (first loloc))])
     (when (char=? #\# (list-ref (list-ref loloc s) l))
-        (set-add! S (list l s 0))))
+        (set-add! S (list l s 0 0))))
   S)
 
 
 
 (define (count-active-neighbors cell SET)
-  (match-let ([(list X Y Z) cell]) 
+  (match-let ([(list X Y Z W) cell]) 
     (for*/sum ([x '(-1 0 1)]
                [y '(-1 0 1)]
                [z '(-1 0 1)]
-               #:when (not (= 0 x y z)))
-      (if (set-member? SET (list (+ X x) (+ Y y) (+ Z z)))
+               [w '(-1 0 1)]
+               #:when (not (= 0 x y z w)))
+      (if (set-member? SET (list (+ X x) (+ Y y) (+ Z z) (+ W w)))
           1 0))))
 
 (define (check-neighbors a SET S)
-  (match-let ([(list X Y Z) a])
-    (for* ([x '(-1 0 1)][y '(-1 0 1)][z '(-1 0 1)])
-      (let ([cell (list (+ X x) (+ Y y) (+ Z z))])
+  (match-let ([(list X Y Z W) a])
+    (for* ([x '(-1 0 1)][y '(-1 0 1)][z '(-1 0 1)][w '(-1 0 1)])
+      (let ([cell (list (+ X x) (+ Y y) (+ Z z) (+ W w))])
         (cond
           [(and (set-member? SET cell)
                 (<= 2 (count-active-neighbors cell SET) 3))
