@@ -69,7 +69,7 @@ acc +6"
 
 ;; Puzzle
 (define data
-  (~> "input.txt"
+  (~> "input/2020-08.txt"
       file->list-of-strings
       (string-split _ "\n")))
 

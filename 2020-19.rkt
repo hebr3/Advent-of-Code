@@ -29,7 +29,7 @@
 
 ;; Data
 (define data
-  (~>> "input.txt"
+  (~>> "input/2020-19.txt"
        file->list-of-strings))
 
 (define test

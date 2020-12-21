@@ -74,7 +74,7 @@
 34
 10
 3"))
-(define data (file->list-of-strings "input.txt"))
+(define data (file->list-of-strings "input/2020-10.txt"))
 
 ;; Puzzle
 (display "test 1: ")

@@ -73,7 +73,7 @@
 
 ;; Data
 (define data
-  (~>> "input.txt"
+  (~>> "input/2020-12.txt"
        file->vector-of-char))
 
 (define test

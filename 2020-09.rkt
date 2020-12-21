@@ -86,7 +86,7 @@
 309
 576"))
 
-(define data (file->list-of-strings "input"))
+(define data (file->list-of-strings "input/2020-09.txt"))
 
 
 ;; Puzzle

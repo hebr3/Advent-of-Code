@@ -21,24 +21,22 @@
 
 ;; Data
 (define data
-  (~>> "input/2020-13.txt"
-       file->list-of-strings))
+  (~>> "input/2020-21.txt"
+       file->list-of-strings
+       (map string->0or1)))
 
 (define test
-  (~>> "mask = XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X
-mem[8] = 11
-mem[7] = 101
-mem[8] = 0
-"
-       test->list-of-strings))
+  (~>> ""
+       test->list-of-strings
+       (map string->0or1)))
 
 
 ;; Puzzle
 (display "test 1: ")
 (~>> test)
 
-(display "one: ")
-(~>> data)
+;(display "one: ")
+;(~>> data)
 
 ;(display "test 2: ")
 ;(~>> test)

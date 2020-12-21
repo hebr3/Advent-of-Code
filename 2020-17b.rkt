@@ -59,7 +59,7 @@
 
 ;; Data
 (define data
-  (~>> "input.txt"
+  (~>> "input/2020-17.txt"
        file->list-of-strings
        (map string->list)))
 

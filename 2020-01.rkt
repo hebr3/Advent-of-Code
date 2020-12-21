@@ -2,7 +2,7 @@
 (require threading)
 
 (define data
-  (~> "input.txt"
+  (~> "input/2020-01.txt"
       open-input-file
       (read-line _ 'return)
       (string-split _ "\n")

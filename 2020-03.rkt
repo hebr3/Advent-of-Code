@@ -16,7 +16,7 @@
 .#..#...#.#")
 
 (define data
-  (~> "input.txt"
+  (~> "input/2020-03w.txt"
       open-input-file
       (read-line _ 'return-linefeed)))
 

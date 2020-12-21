@@ -8,7 +8,7 @@
 2-9 c: ccccccccc")
 
 (define data
-  (~> "input.txt"
+  (~> "input/2020-02.txt"
       open-input-file
       (read-line _ 'return-linefeed)))
 

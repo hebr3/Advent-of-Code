@@ -56,7 +56,7 @@ b")
     (string-split _ "\n\n"))
 
 ;; Puzzle
-;(define data (file->list-of-strings "input.txt"))
+;(define data (file->list-of-strings "input/2020-06.txt"))
 ;
 ;(display "one: ")
 ;(~> data

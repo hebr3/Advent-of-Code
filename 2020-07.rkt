@@ -42,7 +42,7 @@ red test bags contain 1 light red bag."
 
 ;; Puzzle
 (define data
-  (~>> "input.txt"
+  (~>> "input/2020-07.txt"
        file->list-of-strings
        (map format-row _)
        (map (λ (x) (map (λ (y) (string-replace y " " "_")) x)) _)))
