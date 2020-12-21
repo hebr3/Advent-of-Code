@@ -1,2 +1,5 @@
 *.bak
 *.1
+*.txt
+.calva
+*.calva-repl
