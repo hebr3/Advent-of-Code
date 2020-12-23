@@ -24,13 +24,6 @@
 (define (string->0or1 str)
   ((compose dot->0 hash->0) str))
 
-(
-
-(define (string->tile tl)
-  )
-
-
-
 ;; Data
 (define data
   (~>> "input/2020-20.txt"
