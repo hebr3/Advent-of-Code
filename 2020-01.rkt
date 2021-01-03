@@ -18,11 +18,11 @@
 (define find-2020-pair (find-target-pair 2020))
 
 (define (find-2020-triple list-of-numbers)
-  (for*/first ([i list-of-numbers]
-               [j (rest list-of-numbers)]
-               [k (rest (rest list-of-numbers))]
-               #:when (zero? (- 2020 i j k)))
-    (* i j k)))
+  (or (for*/first ([i (rest list-of-numbers)]
+                   [j (rest (rest list-of-numbers))]
+                   #:when (zero? (- 2020 (first list-of-numbers) i j)))
+        (* (first list-of-numbers) i j))
+      (find-2020-triple (rest list-of-numbers))))
 
 (display "one: ")
 (displayln 
@@ -34,5 +34,3 @@
  (~> data
      find-2020-triple
      time))
-
-"cpu time: 109 real time: 114 gc time: 31"
