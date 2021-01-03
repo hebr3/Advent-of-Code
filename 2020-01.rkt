@@ -18,10 +18,10 @@
 (define find-2020-pair (find-target-pair 2020))
 
 (define (find-2020-triple list-of-numbers)
-  (or (for*/first ([i (rest list-of-numbers)]
-                   [j (rest (rest list-of-numbers))]
-                   #:when (zero? (- 2020 (first list-of-numbers) i j)))
-        (* (first list-of-numbers) i j))
+  (define i (first list-of-numbers))
+  (define find-2020-minus-first (find-target-pair (- 2020 i)))
+  (or (let ([jk (find-2020-minus-first (rest list-of-numbers))])
+        (and jk (* i jk)))
       (find-2020-triple (rest list-of-numbers))))
 
 (display "one: ")
@@ -32,5 +32,4 @@
 (display "two: ")
 (displayln
  (~> data
-     find-2020-triple
-     time))
+     find-2020-triple))
