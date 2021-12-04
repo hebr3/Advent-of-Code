@@ -71,3 +71,17 @@
 
 (match-let ([(list num L) (check-boards (cdr (format-data data)) (car (format-data data)))])
   (* num (apply + L)))
+
+(define (check-boards2 LoB LoN)
+  (let ([new-boards (map (λ (board) (update-board board (car LoN))) LoB)])
+    (cond
+      [(empty? (filter (compose not winning-board?) new-boards))
+       (list (car LoN) (car new-boards))]
+      [else
+       (check-boards2 (filter (compose not winning-board?) new-boards) (cdr LoN))])))
+
+(match-let ([(list num L) (check-boards2 (cdr test) (car test))])
+  (* num (apply + L)))
+
+(match-let ([(list num L) (check-boards2 (cdr (format-data data)) (car (format-data data)))])
+  (* num (apply + L)))
