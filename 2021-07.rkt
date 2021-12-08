@@ -17,8 +17,40 @@
       (string-split _ ",")
       (map string->number _)))
 
+(define (triangle n)
+  (* n (add1 n) 1/2))
 
+(define (solve LoN)
+  (let* ([max (apply max LoN)]
+         [min-fuel +inf.0])
+    (for ([m max])
+      (define tmp
+        (for/sum ([i LoN])
+          (abs (- i m))))
+      (when (< tmp min-fuel)
+        (set! min-fuel tmp)))
+    min-fuel))
+
+(define (solve2 LoN)
+  (let* ([max (apply max LoN)]
+         [min-fuel +inf.0])
+    (for ([m max])
+      (define tmp
+        (for/sum ([i LoN])
+          (triangle (abs (- i m)))))
+      (when (< tmp min-fuel)
+        (set! min-fuel tmp)))
+    min-fuel))
 
 (~> test
-    format-data)
-
+    format-data
+    solve)
+(~> data
+    format-data
+    solve)
+(~> test
+    format-data
+    solve2)
+(~> data
+    format-data
+    solve2)
