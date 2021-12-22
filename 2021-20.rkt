@@ -24,7 +24,7 @@
 
 (define test
   '("..#.#..#####.#.#.#.###.##.....###.##.#..###.####..#####..#....#..#..##..###..######.###...####..#..#####..##..#.#####...##.#.#..#.##..#.#......#.###.######.###.####...#.##.##..#..#..#####.....#.#....###..#.##......#.....#..#..#..##..#...##.######.####.####.#.#...#.......#..#.#.#...####.##.#......#..#...##.#.##..#...##.#.##..###.#......#.#.......#.#.#.####.###.##...#.....####.#..#..#.##.#....##..#.####....##...##..#...#......#.#.......#.......##..####..#...#.#.#...##..#.#..###..#####........#..####......#..#"
-""
+    ""
     "#..#."
     "#...."
     "##..#"
@@ -33,12 +33,12 @@
 
 (define (pad-image image)
   (define (pad-string str)
-    (string-join (list "...." str "....") ""))
+    (string-join (list (make-string 150 #\.) str (make-string 150 #\.)) ""))
   (let* ([len (string-length (car image))]
-         [pad (make-string (+ 8 len) #\.)])
-    (append (list pad pad pad pad)
+         [pad (make-string (+ 300 len) #\.)])
+    (append (make-list 150 pad)
             (map pad-string image)
-            (list pad pad pad pad))))
+            (make-list 150 pad))))
 
 (define (format-data data)
   (let ([key (car data)]
@@ -59,20 +59,21 @@
       (flatten
        (for/list ([dy '(-1 0 1)])
          (for/list ([dx '(-1 0 1)])
-;           (displayln (list (+ dx x) (+ dy y)))
-;           (displayln (string-ref (list-ref image (+ dy y)) (+ dx x)))
+           ;           (displayln (list (+ dx x) (+ dy y)))
+           ;           (displayln (string-ref (list-ref image (+ dy y)) (+ dx x)))
            (string-ref (list-ref image (+ dy y)) (+ dx x)))))
       (list #\. #\. #\. #\. #\. #\. #\. #\. #\.)))
 
-(define (update-image key image)
-  (let ([Y (length image)]
-        [X (string-length (car image))])
-    (list key 
-          (for/list ([y Y])
-            (apply string
-                   (map (λ (n) (string-ref key n))
-                        (for/list ([x X])
-                          (list-of-char->number (image-mask-at-xy image x y)))))))))
+(define (update-image data)
+  (match-let ([(list key image) data])
+    (let ([Y (length image)]
+          [X (string-length (car image))])
+      (list key 
+            (for/list ([y Y])
+              (apply string
+                     (map (λ (n) (string-ref key n))
+                          (for/list ([x X])
+                            (list-of-char->number (image-mask-at-xy image x y))))))))))
 
 (define (strip-padding image)
   (define (strip-string str)
@@ -85,21 +86,154 @@
         cdr
         (map strip-string _))))
 
+(define (strip-padding2 data)
+  (match-let ([(list key image) data])
+    (list key (strip-padding image))))
+
 (~> test
     format-data
-    (apply update-image _)
-    (apply update-image _)
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
+    update-image
     cadr
     (string-join _ "")
     string->list
-    (count (λ (c) (char=? #\# c)) _))
+    (count (λ (c) (char=? #\# c)) _)
+    )
 
 (~> data
     format-data
-    (apply update-image _)
-    (apply update-image _)
+    
+    update-image
+    update-image
+    strip-padding2
+    update-image
+    update-image
+    strip-padding2
+    update-image
+    update-image
+    strip-padding2
+    update-image
+    update-image
+    strip-padding2
+    update-image
+    update-image
+    strip-padding2
+    
+    update-image
+    update-image
+    strip-padding2
+    update-image
+    update-image
+    strip-padding2
+    update-image
+    update-image
+    strip-padding2
+    update-image
+    update-image
+    strip-padding2
+    update-image
+    update-image
+    strip-padding2
+    
+    update-image
+    update-image
+    strip-padding2
+    update-image
+    update-image
+    strip-padding2
+    update-image
+    update-image
+    strip-padding2
+    update-image
+    update-image
+    strip-padding2
+    update-image
+    update-image
+    strip-padding2
+    
+    update-image
+    update-image
+    strip-padding2
+    update-image
+    update-image
+    strip-padding2
+    update-image
+    update-image
+    strip-padding2
+    update-image
+    update-image
+    strip-padding2
+    update-image
+    update-image
+    strip-padding2
+    
+    update-image
+    update-image
+    strip-padding2
+    update-image
+    update-image
+    strip-padding2
+    update-image
+    update-image
+    strip-padding2
+    update-image
+    update-image
+    strip-padding2
+    update-image
+    update-image
+    strip-padding2
+    
     cadr
     strip-padding
     (string-join _ "")
     string->list
-    (count (λ (c) (char=? #\# c)) _))
+    (count (λ (c) (char=? #\# c)) _)
+    )
