@@ -24,13 +24,29 @@
 "10000"))
 
 (define (part-A L)
-  42)
+  (define (helper val acc)
+    (if (string=? "" val)
+        (list 0 acc)
+        (append (list (+ (string->number val) (first acc))) (rest acc))))
+  (~> L
+      (foldl helper (list 0) _)
+      flatten
+      (apply max _)))
 
 (part-A test)
 (part-A data)
 
 (define (part-B L)
-  42)
+  (define (helper val acc)
+    (if (string=? "" val)
+        (list 0 acc)
+        (append (list (+ (string->number val) (first acc))) (rest acc))))
+  (~> L
+      (foldl helper (list 0) _)
+      flatten
+      (sort _ >)
+      (take _ 3)
+      (apply + _)))
 
 (part-B test)
 (part-B data)

@@ -13,18 +13,14 @@
 
 (define (count-increases L)
   (count (λ (x) x)
-         (let ([len (length L)])
-           (for/list ([i (sub1 len)])
-             (< (list-ref L i) (list-ref L (add1 i)))))))
+         (for/list ([i L][j (cdr L)]) (< i j))))
 
 (count-increases test)
 (count-increases data)
 
 (define (count-increases-three L)
   (count (λ (x) x)
-         (let ([len (length L)])
-           (for/list ([i (sub1 len)])
-             (< (list-ref L i) (list-ref L (add1 i)))))))
+         (for/list ([i L][j (cddr L)]) (< i j))))
 
 (count-increases-three test)
 (count-increases-three data)
