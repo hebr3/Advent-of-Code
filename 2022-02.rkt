@@ -10,76 +10,48 @@
       ))
 
 (define test '("A Y"
-"B X"
-"C Z"))
+               "B X"
+               "C Z"))
 
-(struct hand [oppenent player val win] #:transparent)
+(define (score-hand h)
+  (cond
+    [(string=? "A X" h) (+ 1 3)]
+    [(string=? "A Y" h) (+ 2 6)]
+    [(string=? "A Z" h) (+ 3 0)]
+    
+    [(string=? "B X" h) (+ 1 0)]
+    [(string=? "B Y" h) (+ 2 3)]
+    [(string=? "B Z" h) (+ 3 6)]
 
-(define (line->hand str)
-  (match-let ([(list o h) (string-split str " ")])
-    (cond
-      [(and (string=? "A" o) (string=? "X" h))
-       (hand 'rock 'rock 1 3)]
-      [(and (string=? "A" o) (string=? "Y" h))
-       (hand 'rock 'paper 2 6)]
-      [(and (string=? "A" o) (string=? "Z" h))
-       (hand 'rock 'scissor 3 0)]
-      
-      [(and (string=? "B" o) (string=? "X" h))
-       (hand 'paper 'rock 1 0)]
-      [(and (string=? "B" o) (string=? "Y" h))
-       (hand 'paper 'paper 2 3)]
-      [(and (string=? "B" o) (string=? "Z" h))
-       (hand 'paper 'scissor 3 6)]
-
-      [(and (string=? "C" o) (string=? "X" h))
-       (hand 'scissor 'rock 1 6)]
-      [(and (string=? "C" o) (string=? "Y" h))
-       (hand 'scissor 'paper 2 0)]
-      [(and (string=? "C" o) (string=? "Z" h))
-       (hand 'scissor 'scissor 3 3)])))
-
-(define (score h)
-  (match-let ([(hand o p v w) h])
-    (+ v w)))
+    [(string=? "C X" h) (+ 1 6)]
+    [(string=? "C Y" h) (+ 2 0)]
+    [(string=? "C Z" h) (+ 3 3)]))
 
 (define (part-A L)
   (~>> L
-      (map line->hand)
-      (map score)
+      (map score-hand)
       (apply +)))
 
 (part-A test)
 (part-A data)
 
-(define (line->hand* str)
-  (match-let ([(list o h) (string-split str " ")])
-    (cond
-      [(and (string=? "A" o) (string=? "X" h))
-       (hand 'rock 'scissor 3 0)]
-      [(and (string=? "A" o) (string=? "Y" h))
-       (hand 'rock 'rock 1 3)]
-      [(and (string=? "A" o) (string=? "Z" h))
-       (hand 'rock 'paper 2 6)]
-      
-      [(and (string=? "B" o) (string=? "X" h))
-       (hand 'paper 'rock 1 0)]
-      [(and (string=? "B" o) (string=? "Y" h))
-       (hand 'paper 'paper 2 3)]
-      [(and (string=? "B" o) (string=? "Z" h))
-       (hand 'paper 'scissor 3 6)]
+(define (score-hand-2 h)
+  (cond
+    [(string=? "A X" h) (+ 3 0)]
+    [(string=? "A Y" h) (+ 1 3)]
+    [(string=? "A Z" h) (+ 2 6)]
+    
+    [(string=? "B X" h) (+ 1 0)]
+    [(string=? "B Y" h) (+ 2 3)]
+    [(string=? "B Z" h) (+ 3 6)]
 
-      [(and (string=? "C" o) (string=? "X" h))
-       (hand 'scissor 'paper 2 0)]
-      [(and (string=? "C" o) (string=? "Y" h))
-       (hand 'scissor 'scissor 3 3)]
-      [(and (string=? "C" o) (string=? "Z" h))
-       (hand 'scissor 'rock 1 6)])))
+    [(string=? "C X" h) (+ 2 0)]
+    [(string=? "C Y" h) (+ 3 3)]
+    [(string=? "C Z" h) (+ 1 6)]))
 
 (define (part-B L)
-    (~>> L
-      (map line->hand*)
-      (map score)
+  (~>> L
+      (map score-hand-2)
       (apply +)))
 
 (part-B test)
