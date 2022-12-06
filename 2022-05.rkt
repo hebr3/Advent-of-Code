@@ -19,15 +19,27 @@
                "move 2 from 2 to 1"
                "move 1 from 1 to 2"))
 
-(define init '(("N" "Q" "L" "S" "C" "Z" "P" "T")
-               ("G" "C" "H" "V" "T" "P" "L")
-               ("F" "Z" "C" "D")
-               ("C" "V" "M" "L" "D" "T" "W" "G")
-               ("C" "W" "P")
-               ("Z" "S" "T" "C" "D" "J" "F" "P")
-               ("D" "B" "G" "W" "V")
-               ("W" "H" "Q" "S" "J" "N")
-               ("V" "L" "S" "F" "Q" "C" "R")))
+;; helper
+(define (list-string-ref LoS col row)
+  (string-ref (list-ref LoS row) col))
+
+(define (parse-stacks LoS)
+  (let ([cols (/ (add1 (string-length (first LoS))) 4)])
+    (for*/list ([i cols])
+      (for/list ([j (sub1 (length LoS))])
+        (string (list-string-ref LoS (+ 1 (* i 4)) j))))))
+
+(define data-state
+  (~>> data
+       (takef _ non-empty-string?)
+       parse-stacks
+       (map (λ (L) (filter (λ (s) (not (string=? s " "))) L)))))
+
+(define test-state
+  (~>> test
+       (takef _ non-empty-string?)
+       parse-stacks
+       (map (λ (L) (filter (λ (s) (not (string=? s " "))) L)))))
 
 ;;---
 
@@ -36,6 +48,21 @@
     [(= from col) (drop L 1)]
     [(= to col) (flatten (cons val L))]
     [else L]))
+
+(define (parse-move-test mv state)
+  (define (iter cnt from to s*)
+    (match-let ([(list A B C) s*])
+      (if (zero? cnt)
+          s*
+          (let ([val (car (list-ref s* (sub1 from)))])
+            (iter (sub1 cnt)
+                  from
+                  to
+                  (list (add-or-remove A val cnt from to 1)
+                        (add-or-remove B val cnt from to 2)
+                        (add-or-remove C val cnt from to 3)))))))
+  (match-let ([(list _ cnt _ i _ f) (string-split mv " ")])
+    (iter (string->number cnt) (string->number i) (string->number f) state)))
 
 (define (parse-move mv state)
   (define (iter cnt from to s*)
@@ -61,7 +88,12 @@
 (define (part-A L)
   (~>> 42))
 
-(foldl parse-move init (drop data 10))
+(~>> (foldl parse-move-test test-state (rest (dropf test non-empty-string?)))
+     (map first)
+     (string-join _ ""))
+(~>> (foldl parse-move data-state (rest (dropf data non-empty-string?)))
+     (map first)
+     (string-join _ ""))
 
 (part-A test)
 (part-A data)
@@ -90,7 +122,9 @@
   (match-let ([(list _ cnt _ i _ f) (string-split mv " ")])
     (iter (string->number cnt) (string->number i) (string->number f) state)))
 
-(foldl parse-move2 init (drop data 10))
+(~>> (foldl parse-move2 data-state (rest (dropf data non-empty-string?)))
+     (map first)
+     (string-join _ ""))
 
 (define (part-B L)
   (~>> 42))
