@@ -3,59 +3,45 @@
 (require racket/match)
 (require rackunit)
 
-;; Prep
+(define data "0,1,4,13,15,12,16")
+(define test "0,3,6")
 
-;; Struct
+;;---
 
-;; Hash
-(define test-spoken (make-hash))
-(define spoken (make-hash))
+(define (run L)
+  (cond
+    [(< 2020 (length L)) L]
+    [(zero? (count (λ (x) (= x (first L))) (rest L))) (run (cons 0 L))]
+    [else
+     (run (cons (add1 (index-of (rest L) (first L))) L))]))
 
-;; Functions
-(define (test-initialize lon)
-  (for ([i (length lon)])
-    (hash-set! test-spoken (list-ref lon i) i)))
+(define (part-A L)
+  (~>> L
+       (string-split _ ",")
+       (map string->number)
+       reverse
+       run
+       cadr))
 
-(define (test-calculate-next last-num idx)
-  (when (< idx 11)
-    (let ([last-occurance (hash-ref test-spoken last-num #f)])
-      (if last-occurance
-          (begin
-            (displayln (list "occur" last-num idx last-occurance))
-            (hash-set! test-spoken (- idx last-occurance) idx)
-            (test-calculate-next (- idx last-occurance) (add1 idx)))
-          (begin
-            (displayln (list "no" last-num idx last-occurance))
-            (hash-set! test-spoken 0 idx)
-            (test-calculate-next 0 (add1 idx)))))))
-        
+(part-A test)
+(part-A data)
 
-;; Data
-(define data
-  (~> "0,1,4,13,15,12,16"
-      (string-split ",")
-      (map string->number _)))
+;;---
 
-(define test
-  (~> "0,3"
-      (string-split ",")
-      (map string->number _)))
+(define (run2 L)
+  (cond
+    [(< 30000000 (length L)) L]
+    [(zero? (count (λ (x) (= x (first L))) (rest L))) (run2 (cons 0 L))]
+    [else
+     (run2 (cons (add1 (index-of (rest L) (first L))) L))]))
 
-;; Puzzle
-(display "test 1: ")
-(test-initialize test)
-test-spoken
-(test-calculate-next 6 4)
-test-spoken
+(define (part-B L)
+  (~>> L
+       (string-split _ ",")
+       (map string->number)
+       reverse
+       run2
+       cadr))
 
-
-(display "one: ")
-(~>> data)
-
-;(display "test 2: ")
-;(~>> test)
-;
-;(display "two: ")
-;(~>> data)
-
-;; Unit Test
+(part-B test)
+(part-B data)
