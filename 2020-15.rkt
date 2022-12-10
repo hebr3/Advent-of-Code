@@ -8,40 +8,59 @@
 
 ;;---
 
-(define (run L)
-  (cond
-    [(< 2020 (length L)) L]
-    [(zero? (count (λ (x) (= x (first L))) (rest L))) (run (cons 0 L))]
-    [else
-     (run (cons (add1 (index-of (rest L) (first L))) L))]))
+(define (trunc-to-2 L)
+  (if (< 2 (length L))
+      (take L 2)
+      L))
+
+(define (run MAX L)
+  (define HT (make-hash))
+  (for ([i L])
+    (hash-set! HT i (list (add1 (index-of L i)))))
+  (define (iter COUNT LAST)
+    (cond
+      [(<= MAX COUNT) LAST]
+      [(<= 2 (length (hash-ref HT LAST)))
+       (let ([a (first (hash-ref HT LAST))]
+             [b (second (hash-ref HT LAST))])
+         (hash-set! HT (- a b) (trunc-to-2 (cons (add1 COUNT) (hash-ref HT (- a b) '()))))
+         (iter (add1 COUNT) (- a b)))]
+      [(= 1 (length (hash-ref HT LAST)))
+       (hash-set! HT 0 (trunc-to-2 (cons (add1 COUNT) (hash-ref HT 0 '()))))
+       (iter (add1 COUNT) 0)]
+      [else
+       (iter (add1 COUNT) LAST)]))
+  (iter (length L) (last L)))
 
 (define (part-A L)
   (~>> L
        (string-split _ ",")
        (map string->number)
-       reverse
-       run
-       cadr))
+       (run 2020)))
 
 (part-A test)
 (part-A data)
 
 ;;---
 
-(define (run2 L)
-  (cond
-    [(< 30000000 (length L)) L]
-    [(zero? (count (λ (x) (= x (first L))) (rest L))) (run2 (cons 0 L))]
-    [else
-     (run2 (cons (add1 (index-of (rest L) (first L))) L))]))
-
-(define (part-B L)
+(define (part-B L lim)
   (~>> L
        (string-split _ ",")
        (map string->number)
-       reverse
-       run2
-       cadr))
+       (run lim)))
 
-(part-B test)
-(part-B data)
+(time (part-B test 3000))
+(time (part-B test 30000))
+(time (part-B test 300000))
+(time (part-B test 3000000))
+(time (part-B test 30000000))
+
+(time (part-B "0,3,6" 30000000))
+(time (part-B "1,3,2" 30000000))
+(time (part-B "2,1,3" 30000000))
+(time (part-B "1,2,3" 30000000))
+(time (part-B "2,3,1" 30000000))
+(time (part-B "3,2,1" 30000000))
+(time (part-B "3,1,2" 30000000))
+
+(time (part-B data 30000000))
