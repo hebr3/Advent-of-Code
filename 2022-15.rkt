@@ -76,7 +76,21 @@
 
 (: test (Listof (List Point Point)))
 (define test
-  (list (list (Point 2 18) (Point -2 15)) (list (Point 9 16) (Point 10 16)) (list (Point 13 2) (Point 15 3)) (list (Point 12 14) (Point 10 16)) (list (Point 10 20) (Point 10 16)) (list (Point 14 17) (Point 10 16)) (list (Point 8 7) (Point 2 10)) (list (Point 2 0) (Point 2 10)) (list (Point 0 11) (Point 2 10)) (list (Point 20 14) (Point 25 17)) (list (Point 17 20) (Point 21 22)) (list (Point 16 7) (Point 15 3)) (list (Point 14 3) (Point 15 3)) (list (Point 20 1) (Point 15 3))))
+  (list
+   (list (Point 2 18) (Point -2 15))
+   (list (Point 9 16) (Point 10 16))
+   (list (Point 13 2) (Point 15 3))
+   (list (Point 12 14) (Point 10 16))
+   (list (Point 10 20) (Point 10 16))
+   (list (Point 14 17) (Point 10 16))
+   (list (Point 8 7) (Point 2 10))
+   (list (Point 2 0) (Point 2 10))
+   (list (Point 0 11) (Point 2 10))
+   (list (Point 20 14) (Point 25 17))
+   (list (Point 17 20) (Point 21 22))
+   (list (Point 16 7) (Point 15 3))
+   (list (Point 14 3) (Point 15 3))
+   (list (Point 20 1) (Point 15 3))))
 
 (: String->Real (-> String Real))
 (define (String->Real str)
@@ -137,6 +151,23 @@
 ;(part-A data 2000000)
 
 ;;;;;
+
+(: points-outside (-> Point Point (Listof Point)))
+(define (points-outside S B)
+  (: D Real)
+  (define D (add1 (m-dist S B)))
+  (: bounds (Listof Point))
+  (define bounds
+    (for*/list : (Listof Point) ([xo (in-range (- D) D)][yo (in-range (- D) D)])
+      (Point (+ xo (Point-x S)) (+ yo (Point-y S)))))
+  (: outside? (-> Point Boolean))
+  (define (outside? p)
+    (<= (m-dist p S) (add1 D)))
+  (filter outside? bounds))
+
+;(: all-points-outside (-> (Listof (List Point Point)) (Listof Point)))
+;(define (all-points-outside lop)
+;  (foldr
 
 (: part-B (-> (Listof (List Point Point)) Integer Integer))
 (define (part-B inputs N)
