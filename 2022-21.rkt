@@ -101,26 +101,25 @@ hmdt: 32")
     (define low* (run-init-iter low))
     (define mid* (run-init-iter mid))
     (define high* (run-init-iter high))
-    (println (list low mid high))
+    ;(println (list low mid high))
     (cond
       [(zero? mid*) mid]
-      [(< mid* 0)
+      [(and (< high* 0)
+            (< mid* 0))
        (part2 low mid)]
+      [(< mid* 0)
+       (part2 mid high)]
+      [(< high* 0)
+       (part2 mid high)]
       [else
-       (part2 mid high)]))
+       (part2 low mid)]))
   
   (part2 -10000000000000 10000000000000))
-;  (for ([i (range 100)])
-;    (define i* (+ 3560324848100 i))
-;    (hash-set! lookup-HT "humn" (list (number->string i*)))
-;    (match-let ([(list a _ b) (hash-ref lookup-HT "root")])
-;      (when (= (run-inst a) (run-inst b))
-;        (println i*)))))
 
 ;;---
 
-;(part-A test)
-;(part-A data)
-;(part-B test)
-(part-B data)
+(displayln (format "(part-A test): ~a" (part-A test)))
+(displayln (format "(part-A data): ~a" (part-A data)))
+(displayln (format "(part-B test): ~a" (part-B test)))
+(displayln (format "(part-B data): ~a" (part-B data)))
 
