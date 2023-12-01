@@ -50,7 +50,7 @@ treb7uchet")
                    (cons "9" 9)
                    (cons "0" 0))))
 
-(define exp #px"\\d|one|two|three|four|five|six|seven|eight|nine")
+(define pattern #px"\\d|one|two|three|four|five|six|seven|eight|nine")
 
 (define test2 "two1nine
 eightwothree
@@ -58,12 +58,20 @@ abcone2threexyz
 xtwone3four
 4nineeightseven2
 zoneight234
-7pqrstsixteen")
+7pqrstsixteen
+twoneight")
 
 (define (part-B L)
   (~> L
       (string-split "\n")
-      (map (λ (s) (regexp-match* exp s)) _)
+      (map (λ (s) (string-replace s "oneight" "oneeight")) _)
+      (map (λ (s) (string-replace s "twone" "twoone")) _)
+      (map (λ (s) (string-replace s "threeight" "threeeight")) _)
+      (map (λ (s) (string-replace s "fiveight" "fiveeeight")) _)
+      (map (λ (s) (string-replace s "sevenine" "sevennine")) _)
+      (map (λ (s) (string-replace s "eightwo" "eighttwo")) _)
+      (map (λ (s) (string-replace s "nineight" "nineeight")) _)
+      (map (λ (s) (regexp-match* pattern s)) _)
       (map (λ (l) (map (λ (ll) (hash-ref lookup-hash ll)) l)) _)
       (map (λ (l) (+ (* 10 (first l)) (last l))) _)
       (apply + _)
