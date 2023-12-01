@@ -15,14 +15,11 @@ a1b2c3d4e5f
 treb7uchet")
 
 (define (part-A L)
-  (define (first-and-last s)
-    (list (first s) (last s)))
   (~> L
       (string-split "\n")
-      (map (λ (s) (string->list s)) _)
-      (map (λ (l) (filter (λ (c) (member c (list #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\0))) l)) _) 
-      (map (λ (l) (first-and-last l)) _)
-      (map (λ (l) (list->string l)) _)
+      (map (λ (s) (regexp-match* #px"\\d" s)) _)
+      (map (λ (l) (list (first l) (last l))) _)
+      (map (λ (l) (string-join l "")) _)
       (map (λ (s) (string->number s)) _)
       (apply + _)
       ))
@@ -32,26 +29,28 @@ treb7uchet")
 
 ;;
 
-(define valid-Hash (make-hash))
-(hash-set! valid-Hash "one" 1)
-(hash-set! valid-Hash "two" 2)
-(hash-set! valid-Hash "three" 3)
-(hash-set! valid-Hash "four" 4)
-(hash-set! valid-Hash "five" 5)
-(hash-set! valid-Hash "six" 6)
-(hash-set! valid-Hash "seven" 7)
-(hash-set! valid-Hash "eight" 8)
-(hash-set! valid-Hash "nine" 9)
-(hash-set! valid-Hash "1" 1)
-(hash-set! valid-Hash "2" 2)
-(hash-set! valid-Hash "3" 3)
-(hash-set! valid-Hash "4" 4)
-(hash-set! valid-Hash "5" 5)
-(hash-set! valid-Hash "6" 6)
-(hash-set! valid-Hash "7" 7)
-(hash-set! valid-Hash "8" 8)
-(hash-set! valid-Hash "9" 9)
-(hash-set! valid-Hash "0" 0)
+(define lookup-hash
+  (make-hash (list (cons "one" 1)
+                   (cons "two" 2)
+                   (cons "three" 3)
+                   (cons "four" 4)
+                   (cons "five" 5)
+                   (cons "six" 6)
+                   (cons "seven" 7)
+                   (cons "eight" 8)
+                   (cons "nine" 9)
+                   (cons "1" 1)
+                   (cons "2" 2)
+                   (cons "3" 3)
+                   (cons "4" 4)
+                   (cons "5" 5)
+                   (cons "6" 6)
+                   (cons "7" 7)
+                   (cons "8" 8)
+                   (cons "9" 9)
+                   (cons "0" 0))))
+
+(define exp #px"\\d|one|two|three|four|five|six|seven|eight|nine")
 
 (define test2 "two1nine
 eightwothree
@@ -61,38 +60,14 @@ xtwone3four
 zoneight234
 7pqrstsixteen")
 
-(define (get-first-num str)
-  (define (iter i f)
-    ;(println (substring str i f))
-    (cond
-      [(hash-has-key? valid-Hash (substring str i f))
-       (hash-ref valid-Hash (substring str i f))]
-      [(< (sub1 (string-length str)) f) (iter (+ 1 i) (+ 2 i))]
-      [(< 5 (- f i)) (iter (+ 1 i) (+ 2 i))]
-      [else (iter i (+ 1 f))]))
-  (iter 0 1))
-    
-(define (get-last-num str)
-  (define (iter i f)
-    (define sub (substring str (- (string-length str) f) (- (string-length str) i)))
-    (cond
-      [(hash-has-key? valid-Hash sub)
-       (hash-ref valid-Hash sub)]
-      [(< (sub1 (string-length str)) f) (iter (+ 1 i) (+ 2 i))] 
-      [(< 5 (- f i)) (iter (+ 1 i) (+ 2 i))]
-      [else (iter i (+ 1 f))]))
-  (iter 0 1))
-
-(define (first-and-last2 str)
-  (let ([f (get-first-num str)]
-        [l (get-last-num str)])
-    (+ (* 10 f) l)))
-
 (define (part-B L)
   (~> L
       (string-split "\n")
-      (map (λ (s) (first-and-last2 s)) _)
-      (apply + _)))
+      (map (λ (s) (regexp-match* exp s)) _)
+      (map (λ (l) (map (λ (ll) (hash-ref lookup-hash ll)) l)) _)
+      (map (λ (l) (+ (* 10 (first l)) (last l))) _)
+      (apply + _)
+      ))
 
 (part-B test2)
 (part-B data)
