@@ -37,48 +37,102 @@
   (define block (pad-block L))
   ;(for ([s (string-split block "\n")])
   ;  (displayln s))
-  (define part-numbers (flatten (regexp-match* #px"\\d+" block)))
   (define row-length (index-of (string->list block) #\newline char=?))
-  (for/sum ([pn part-numbers])
-    (define pos (regexp-match-positions pn block))
-    (match-let ([(cons (cons x y) _)pos])
-      ;; top-right
-      (define top-right (string-ref block (- x row-length 2)))
-      ;; right
-      (define right (string-ref block (sub1 x)))
-      ;; bottom-right
-      (define bottom-right (string-ref block (+ x row-length)))
-      
-      ;; top-left
-      (define top-left (string-ref block (- y row-length 1)))
-      ;; left
-      (define left (string-ref block y))
-      ;; bottom-left
-      (define bottom-left (string-ref block (+ y row-length 1)))
-
-      ;; top
-      (define top (for/list ([i (in-range (- y x))])
-                    (string-ref block (- y row-length i 2))))
-      ;; bottom
-      (define bottom (for/list ([i (in-range (- y x))])
-                       (string-ref block (+ x row-length i 1))))
-
-      (define neighbors (append (list top-right right bottom-right top-left left bottom-left) top bottom))
-      (if (for/or ([n neighbors]) (not (char=? #\. n)))
-          (string->number pn)
-          0)
-      )
-    ))
+  (define (iter idx acc)
+    (define c1 (string-ref block idx))
+    (define c2 (string-ref block (+ 1 idx)))
+    (define c3 (string-ref block (+ 2 idx)))
+    (define hundreds (list (- idx row-length 2) (- idx row-length 1) (- idx row-length) (- idx row-length -1) (- idx row-length -2)
+                           (- idx 1) (+ idx 3)
+                           (+ idx row-length) (+ idx row-length 1) (+ idx row-length 2) (+ idx row-length 3) (+ idx row-length 4)))
+    (define tens (list (- idx row-length 2) (- idx row-length 1) (- idx row-length) (- idx row-length -1)
+                       (- idx 1) (+ idx 2)
+                       (+ idx row-length) (+ idx row-length 1) (+ idx row-length 2) (+ idx row-length 3)))
+    (define ones (list (- idx row-length 2) (- idx row-length 1) (- idx row-length)
+                       (- idx 1) (+ idx 1)
+                       (+ idx row-length) (+ idx row-length 1) (+ idx row-length 2)))
+    (define (valid? c)
+      (and (not (member c (list #\newline #\.)))
+           (member c (string->list "1234567890"))))
+    (define (symbol? c)
+      (not (char=? #\. c)))
+    ;(println (list c1 c2 c3))
+    (cond
+      [(< (- (string-length block) row-length) idx)
+       acc]
+      [(and (valid? c1) (valid? c2) (valid? c3))
+       (define pn (string->number (string c1 c2 c3)))
+       (if (for/or ([i hundreds]) (symbol? (string-ref block i)))
+           (iter (+ 3 idx) (+ acc pn))
+           (iter (+ 3 idx) acc))]
+      [(and (valid? c1) (valid? c2))
+       (define pn (string->number (string c1 c2)))
+       (if (for/or ([i tens]) (symbol? (string-ref block i)))
+           (iter (+ 2 idx) (+ acc pn))
+           (iter (+ 2 idx) acc))]
+      [(valid? c1)
+       (define pn (string->number (string c1)))
+       (if (for/or ([i ones]) (symbol? (string-ref block i)))
+           (iter (+ 1 idx) (+ acc pn))
+           (iter (+ 1 idx) acc))]
+      [else
+       (iter (add1 idx) acc)]))
+  (iter (add1 row-length) 0))
   
 
 (part-A test)
-;(part-A data)
+(part-A data)
 
 ;;
 
 (define (part-B L)
-  L)
+  (define block (pad-block L))
+  (define gear-locs (map car (regexp-match-positions* #px"\\*" block)))
+  (define number-locs (regexp-match-positions* #px"\\d+" block))
+  (define row-length (index-of (string->list block) #\newline char=?))
+  (define (get-neighbors idx)
+    (for/list ([n number-locs])
+      (match-let ([(cons x y) n])
+        (or (and (member (+ idx 1) (range x y)) ; right
+                 (string->number (substring block x y)))
+            
+            (and (member (- idx row-length) (range x y)) ; right-top
+                 (string->number (substring block x y)))
 
-;(part-B test)
-;(part-B data)
+            (and (member (- idx row-length 1) (range x y)) ; top
+                 (string->number (substring block x y)))
 
+            (and (member (- idx row-length 2) (range x y)) ; left-top
+                 (string->number (substring block x y)))
+
+            (and (member (- idx 1) (range x y)) ; left
+                 (string->number (substring block x y)))
+
+            (and (member (+ idx row-length) (range x y)) ; left-bottom
+                 (string->number (substring block x y)))
+
+            (and (member (+ idx row-length 1) (range x y)) ; bottom
+                 (string->number (substring block x y)))
+
+            (and (member (+ idx row-length 2) (range x y)) ; right-bottom
+                 (string->number (substring block x y)))
+
+            )
+        )))
+  (for/sum ([g gear-locs])
+    (let ([gears (filter (λ (x) x) (get-neighbors g))])
+      (if (= 2 (length gears))
+          (* (first gears) (second gears))
+          0))))
+
+(part-B test)
+(part-B data)
+
+
+;; (define test2 ".....
+;; .12..
+;; ..*..
+;; .789.
+;; .....")
+;; 
+;; (part-B test2)
