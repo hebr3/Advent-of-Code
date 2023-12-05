@@ -60,7 +60,7 @@ humidity-to-location map:
     (define (lookup idx LoN)
       (or (for/or ([l LoN])
             (match-let ([(list dest src rng) (map string->number (string-split l))])
-              (if (<= src idx (+ src rng))
+              (if (and (<= src idx) (< idx (+ src rng)))
                   (+ idx (- dest src))
                   #f)))
           idx))
@@ -77,21 +77,16 @@ humidity-to-location map:
                  ))
            )))
 
-(part-A test)
-(part-A data)
+;(part-A test)
+;(part-A data)
 
 ;;
 
-(define (seed-ranges L)
-  (define (iter L* acc)
-    (if (empty? L*)
-        (flatten acc)
-        (iter (rest (rest L*)) (append (range (first L*) (+ (first L*) (second L*))) acc))))
-  (iter L '()))
+
 
 (define (part-B L)
-    (let* ([lines (string-split L "\n\n")]
-         [seeds (seed-ranges (map string->number (rest (string-split (first lines)))))]
+  (let* ([lines (string-split L "\n\n")]
+         [seeds (map string->number (rest (string-split (first lines))))]
          [seed-to-soil (rest (string-split (second lines) "\n"))]
          [soil-to-fertilizer (rest (string-split (third lines) "\n"))]
          [fertilizer-to-water (rest (string-split (fourth lines) "\n"))]
@@ -100,25 +95,37 @@ humidity-to-location map:
          [temperature-to-humidity (rest (string-split (seventh lines) "\n"))]
          [humidity-to-location (rest (string-split (eighth lines) "\n"))])
 
-    (define (lookup idx LoN)
+    (define (rev-lookup idx LoN)
       (or (for/or ([l LoN])
             (match-let ([(list dest src rng) (map string->number (string-split l))])
-              (if (<= src idx (+ src rng))
-                  (+ idx (- dest src))
+              (if (and (<= dest idx) (< idx (+ dest rng)))
+                  (+ (- src dest) idx)
                   #f)))
           idx))
-    (apply min
-           (for/list ([s seeds])
-             (~> s
-                 (lookup seed-to-soil)
-                 (lookup soil-to-fertilizer)
-                 (lookup fertilizer-to-water)
-                 (lookup water-to-light)
-                 (lookup light-to-temperature)
-                 (lookup temperature-to-humidity)
-                 (lookup humidity-to-location)
-                 ))
-           )))
+
+    (define (valid-seed? s)
+      (define (iter L)
+        (cond
+          [(empty? L) #f]
+          [(and (<= (first L) s) (< s (+ (first L) (second L)))) s]
+          [else (iter (cddr L))]))
+      (or (iter seeds) #f))
+    
+    (for/or ([loc 84470622])
+      (when (zero? (modulo loc 1000000))
+        (println (list (current-seconds) loc)))
+      (define (check? x) (if (valid-seed? x) loc #f))
+      (~> loc
+          (rev-lookup humidity-to-location)
+          (rev-lookup temperature-to-humidity)
+          (rev-lookup light-to-temperature)
+          (rev-lookup water-to-light)
+          (rev-lookup fertilizer-to-water)
+          (rev-lookup soil-to-fertilizer)
+          (rev-lookup seed-to-soil)
+          check?))
+    
+    ))
 
 (part-B test)
-;(part-B data)
+(part-B data)
