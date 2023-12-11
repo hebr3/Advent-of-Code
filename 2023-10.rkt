@@ -216,15 +216,25 @@ L7JLJL-JLJLJL--JLJ.L")
       [(char=? #\- c) "\u2500"]
       [(char=? #\| c) "\u2502"]
       [(char=? #\S c) "\u253c"]))
-      
   
   (define LOOP (DFS PIPES START))
+
   (for ([row rows][y (in-naturals)])
     (for ([c row][x (in-naturals)])
       (if (member (point x y) LOOP)
           (display (remap-char c))
           (display #\o)))
     (displayln ""))
+
+  (for*/sum ([y (length rows)][x (string-length (first rows))]
+                          #:do [(define pt (point x y))]
+                          #:when (not (member pt LOOP)))
+    (if (odd? (for/sum ([i (range x (string-length (first rows)))])
+      (if (and (member (point (add1 i) (add1 y)) LOOP)
+               (member (point (add1 i) y) LOOP)
+               (member (point (add1 i) (add1 y)) (hash-ref PIPES (point (add1 i) y))))
+          1 0) 
+      )) 1 0))
   
 ;;   (length (filter odd?
 ;;           (for*/list ([y (length rows)]
@@ -249,10 +259,10 @@ L7JLJL-JLJLJL--JLJ.L")
 ;;       ))))
   )
           
-;(part-B test1)
-;(part-B test2)
-;(part-B test3)
-;(part-B test3b)
-;(part-B test4)
-;(part-B test5)
+(part-B test1)
+(part-B test2)
+(part-B test3)
+(part-B test3b)
+(part-B test4)
+(part-B test5)
 (part-B data)
