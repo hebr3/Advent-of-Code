@@ -21,73 +21,65 @@
 
 ;;
 
-(define (find-?-marks str)
-  (for/list ([c str][i (in-naturals)] #:when (char=? #\? c))
-    i))
+(define DP (make-hash))
 
-(struct record [springs data question-marks spring-count] #:transparent)
-
-(define (string->record str)
-  (match-let ([(list s d) (string-split str " ")])
-    (let ([d* (map string->number (string-split d ","))]
-          [qm (find-?-marks s)]
-          [sc (for/sum ([c s] #:when (char=? #\# c)) 1)])
-      (record s d* qm sc))))
-
-(define (record-good? rec)
-  (match-let ([(record test-str real-lengths qm sc) rec])
-    (let* ([test-springs (string-split test-str #px"\\.+")]
-           [test-lengths (map string-length test-springs)])
-    (equal? test-lengths real-lengths))))
-
-;; (map (compose record-good? string->record) (string-split demo "\n"))
-
-(define (build-test str comb)
-  (apply string
-         (for/list ([c str][i (in-naturals)])
-           (cond
-             [(member i comb) #\#]
-             [(char=? #\? c) #\.]
-             [else c]))))
-
-(define (test-record rec)
-  (match-let ([(record test-str real-lengths qm sc) rec])
-    (let* ([delta (- (apply + real-lengths) sc)]
-           [combs (combinations qm delta)])
-      (for/sum ([comb combs])
-        (if (record-good? (record (build-test test-str comb) real-lengths qm sc))
-            1 0)))))
-        
+(define (getcount line counts pos current_count countpos)
+  (define key (list line counts pos current_count countpos))
+  (cond
+    [(hash-has-key? DP key)
+     (hash-ref DP key)]
+    [(= pos (string-length line))
+     (if (= (length counts) countpos) 1 0)]
+    [(char=? #\# (string-ref line pos))
+     (getcount line counts (add1 pos) (add1 current_count) countpos)]
+    [(or (char=? #\. (string-ref line pos))
+         (= (length counts) countpos))
+     (cond
+       [(and (< countpos (length counts))
+             (= current_count (list-ref counts countpos)))
+        (getcount line counts (add1 pos) 0 (add1 countpos))]
+       [(zero? current_count)
+        (getcount line counts (add1 pos) 0 countpos)]
+       [else 0])]
+    [else
+     (let ([hash_count (getcount line counts (add1 pos) (add1 current_count) countpos)]
+           [dot_count 0])
+       (cond
+         [(= current_count (list-ref counts countpos))
+          (set! dot_count (getcount line counts (add1 pos) 0 (add1 countpos)))]
+         [(zero? current_count)
+          (set! dot_count (getcount line counts (add1 pos) 0 countpos))])
+       (hash-set! DP key (+ hash_count dot_count))
+       (+ hash_count dot_count))]))      
 
 (define (part-A L)
-  (define records (map string->record (string-split L "\n")))
-  (for/sum ([rec records])
-    (println rec)
-    (test-record rec)))
+  (define rows (string-split L "\n"))
+  (for/sum ([row rows])
+    (match-let ([(list str nums) (string-split row)])
+      (let ([line (string-join (list str ".") "")]
+            [counts (map string->number (string-split nums ","))])
+        (getcount line counts 0 0 0)))))
 
-;; (part-A test)
-;; (part-A data)
+(part-A test)
+(part-A data)
 
 ;;
 
-(define (five-fold-springs str)
-  (string-join (make-list 5 str) "?"))
-(define (five-fold-data str)
-  (string-join (make-list 5 str) ","))
-
-(define (string->record* str)
-  (match-let ([(list s d) (string-split str " ")])
-    (let* ([s* (five-fold-springs s)]
-           [d* (map string->number (string-split (five-fold-data d) ","))]
-           [qm (find-?-marks s*)]
-           [sc (for/sum ([c s*] #:when (char=? #\# c)) 1)])
-      (record s* d* qm sc))))
+(define (five-fold los)
+  (for/list ([s los])
+    (match-let ([(list str nums) (string-split s)])
+      (string-join (list (string-join (make-list 5 str) "?")
+                         (string-join (make-list 5 nums) ","))
+                   " "))))
 
 (define (part-B L)
-  (define records (map string->record* (string-split L "\n")))
-  (for/sum ([rec records])
-    (test-record rec)))
+  (define rows (string-split L "\n"))
+  (for/sum ([row (five-fold rows)])
+    (match-let ([(list str nums) (string-split row)])
+      (let ([line (string-join (list str ".") "")]
+            [counts (map string->number (string-split nums ","))])
+        (getcount line counts 0 0 0)))))
   
- 
 (part-B test)
-;; (part-B data)
+(part-B data)
+
