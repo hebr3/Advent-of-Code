@@ -1,7 +1,4 @@
 #lang racket
-(require racket/match)
-(require threading)
-(require racket/set)
 (require (only-in "util.rkt" input->data tap point))
 
 (define data (input->data "input/2023-15.txt"))

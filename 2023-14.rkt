@@ -1,6 +1,4 @@
 #lang racket
-(require racket/match)
-(require racket/set)
 (require (only-in "util.rkt" input->data tap point))
 
 (define data (input->data "input/2023-14.txt"))
@@ -140,7 +138,7 @@ O.#..O.#.#
        (hash-set! DP (mat->str mat) new)
        new)]))
 
-(define (display-mat mat)
+(define (tap-mat mat)
   (for ([r mat])
     (for ([c r])
       (display c))
@@ -148,7 +146,7 @@ O.#..O.#.#
   (displayln "")
   mat)
 
-(define (display-mats old new)
+(define (tap-mats old new)
   (for ([o old][n new])
     (display-row o)
     (display " ")
@@ -175,10 +173,8 @@ O.#..O.#.#
         [DP-count (make-hash)]
         [mat (str->loloc L)])
     (define (iter m i)
-      ;(displayln i)
-      ;(display-mat m)
       (cond
-        [(< 1000 i)
+        [(< 10000 i)
          (println "I went over 1000")
          DP-next]
         [(hash-has-key? DP-next (mat->str m))
@@ -207,4 +203,4 @@ O.#..O.#.#
 
 (part-B test)
 ;(part-B test2)
-(part-B data)
+;(part-B data)
