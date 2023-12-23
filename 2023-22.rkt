@@ -59,27 +59,22 @@
         tower
         (update-tower new-tower (add1 i)))))
 
-(define (take* lst num)
-  (if (< num (length lst))
-      (take lst num)
-      lst))
-
 (define (part-A L)
   (let* ([input-rows (string-split L "\n")]
-         [init-blocks (take* (sort (map str->block input-rows) block<?) 200)]
+         [init-blocks (sort (map str->block input-rows) block<?)]
          [init-tower (update-tower init-blocks 0)])
     (for/sum ([lob init-tower])
-      (let* ([pos-tower (for/list ([b init-tower] #:when (not (equal? b lob))) b)]
-             [next-tower (update-tower pos-tower 0)])
-        ;(println (list 'lob lob))
-        (if (equal? pos-tower next-tower)
+      (let ([pos-tower (for/list ([b init-tower] #:when (not (equal? b lob))) b)])
+        (if (for/and ([p pos-tower]) (not (can-drop? p pos-tower)))
             1
             0))
       )))
 
 
 (part-A test)
-;(part-A data)
+
+(time
+(part-A data))
 
 ;;
 
@@ -88,9 +83,6 @@
 
 ;(part-B test)
 ;(part-B data)
-
-
-
 
 
 
