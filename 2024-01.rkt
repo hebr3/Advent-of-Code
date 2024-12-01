@@ -16,28 +16,31 @@
 3   9
 3   3")
 
-(define (part-A L)
-  (define L* (~> L
-                 (string-split _ "\n")
-                 (map (λ (x) (string-split x "   ")) _)
-                 (map (λ (x) (map string->number x)) _)))
-  (apply + (map (λ (a b) (abs (- a b)))
-       (sort (map first L*) <)
-       (sort (map second L*) <))))
+(define (str->pair str)
+  (map string->number (string-split str "   ")))
 
+(define (part-A L)
+  (let* ([LINES (string-split L "\n")]
+         [PARTS (map str->pair LINES)]
+         [LEFT  (sort (map first PARTS) <)]
+         [RIGHT (sort (map second PARTS) <)]
+         [DIFF  (map (λ (a b) (abs (- a b))) LEFT RIGHT)]
+         [SUM   (apply + DIFF)])
+    SUM))
+         
 (part-A test)
 (part-A data)
 
 ;;
 
 (define (part-B L)
-  (define L* (~> L
-                 (string-split _ "\n")
-                 (map (λ (x) (string-split x "   ")) _)
-                 (map (λ (x) (map string->number x)) _)))
-  (define LEFT (map first L*))
-  (define RIGHT (map second L*))
-  (for/sum ([i LEFT])
-    (* i (count (λ (x) (= x i)) RIGHT))))
+  (let* ([LINES (string-split L "\n")]
+         [PARTS (map str->pair LINES)]
+         [LEFT  (sort (map first PARTS) <)]
+         [RIGHT (sort (map second PARTS) <)]
+         [SCORE (for/sum ([i LEFT])
+                  (* i (count (λ (x) (= x i)) RIGHT)))])
+    SCORE))
 
 (part-B test)
+(part-B data)
