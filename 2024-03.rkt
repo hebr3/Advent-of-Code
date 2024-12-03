@@ -15,14 +15,14 @@
   (pregexp "mul\\((\\d{1,3}),(\\d{1,3})\\)"))
 
 (define (parse-mul str)
-  (apply * (map string->number (string-split str #rx"mul\\(|,|\\)"))))
+  (match-let ([(list a b) (string-split str #rx"mul\\(|,|\\)")])
+    (* (string->number a) (string->number b))))
 
 (define (part-A L)
-  (let* ([LINES (string-split L "\n")])
-    (apply +
-           (map parse-mul
-                (flatten (for/list ([line LINES])
-                           (regexp-match* mul-pattern line)))))))
+  (let* ([OPS (regexp-match* mul-pattern L)]
+         [VALS (map parse-mul OPS)]
+         [SUM (for/sum ([i VALS]) i)])
+    SUM))
 
 (part-A test)
 (part-A data)
@@ -49,12 +49,11 @@
   (iter L '() #t))
 
 (define (part-B L)
-  (let* ([LINES (string-split L "\n")])
-    (apply +
-           (map parse-mul
-                (drop-between
-                 (flatten (for/list ([line LINES])
-                            (regexp-match* mul-pattern2 line))))))))
+  (let* ([OPS (regexp-match* mul-pattern2 L)]
+         [ENABLED (drop-between OPS)]
+         [VALS (map parse-mul ENABLED)]
+         [SUM (for/sum ([i VALS]) i)])
+    SUM))
 
 (part-B test2)
 (part-B data)
