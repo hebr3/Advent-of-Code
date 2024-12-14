@@ -109,6 +109,7 @@ p=9,5 v=-3,-3
         (set! background
               (place-image (square 1 'solid 'black) ix iy background))))
     background)
+  
   (for/list ([i vertical-poi])
     (list i (draw-lor (iter robots i)))))
 
