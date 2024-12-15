@@ -43,6 +43,7 @@
        (string-split str "\n\n")))
 
 (define (check-rule? rule update)
+  ;(println (list rule update))
   (match-let ([(list A B) (map string->number (string-split rule "|"))])
     (if (and (member A update) (member B update))
         (< (index-of update A) (index-of update B))
@@ -52,37 +53,14 @@
   (list-ref update (floor (/ (length update) 2))))
 
 (define (part-A L)
-  (define (make-rule r)
-    (match-let ([(list a b) (string-split r "|")])
-      (list a b (pregexp (string-append a ".*,"b)))))
-  
-  (define (get-rules input)
-    (map make-rule (string-split (first (string-split input "\n\n"))))
-    
-  (define (get-updates input)
-    (string-split (second (string-split input "\n\n"))))
-    
-  (define RULES (get-rules L))
-  (define UPDATES (get-updates L))
+  (match-let ([(list RULES UPDATES) (string-split-blocks L)])
+    (for/sum ([update UPDATES])
+      (let ([UPDATES* (map string->number (string-split update ","))])
+        (if (for/and ([rule RULES]) (check-rule? rule UPDATES*))
+            (return-middle UPDATES*)
+            0)))))
 
-  (define (rule-applies rule update)
-    (match-let ([(list a b px) rule])
-      (and (string-contains? update a)
-           (string-contains? update b))))
-
-  (define (middle-value str)
-    (let ([vals (map string->number (string-split str ","))])
-      (list-ref vals (floor (/ (length vals) 2)))))
-
-  (for/sum ([update UPDATES])
-    (if (for/and ([rule RULES] #:when (rule-applies rule update))
-          (match-let ([(list a b px) rule])
-            (regexp-match px update)))
-        (middle-value update)
-        0)))
-
-
-(part-A test)
+;(part-A test)
 ;(part-A data)
 
 ;;
@@ -156,4 +134,4 @@
                     (filter (λ (x) (member x incorrect)) ORDERED-PAIRS)))))))
 
 (part-B test)
-;(part-B data)
+(part-B data)

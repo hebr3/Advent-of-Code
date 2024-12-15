@@ -60,8 +60,8 @@
             [counts (map string->number (string-split nums ","))])
         (getcount line counts 0 0 0)))))
 
-;;(part-A test)
-;;(part-A data)
+(part-A test)
+(part-A data)
 
 ;;
 
@@ -80,9 +80,6 @@
             [counts (map string->number (string-split nums ","))])
         (getcount line counts 0 0 0)))))
   
-;;(part-B test)
+(part-B test)
 (part-B data)
-
-(take (hash->list DP) 5)
-(last (hash->list DP))
 

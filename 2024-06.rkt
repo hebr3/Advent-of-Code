@@ -108,9 +108,9 @@
               [(list X Y) bounds])
     (cond
       [(or (< c 0) (< X c) (< r 0) (< Y r))
-       0]
+       'non-loop]
       [(set-member? positions guard)
-       1]
+       'loop]
       [(eq? 'north dir)
        (if (set-member? obstructions (list c (sub1 r)))
            (update-guard-2 (rotate guard) obstructions positions bounds)
@@ -140,13 +140,14 @@
 
 (define (part-B L)
   (let ([BOARDS (generate-boards L)])
-    (for/sum ([f (for/list ([board BOARDS])
-                   (let ([BOUNDS (get-bounds board)]
-                         [OBSTRUCTIONS (get-obstructions board)]
-                         [GUARD (get-guard board)]
-                         [POSITIONS (mutable-set)])
-                     (future (λ () (update-guard-2 GUARD OBSTRUCTIONS POSITIONS BOUNDS)))))])
-      (touch f))))
+;    (for ([b BOARDS]) (println b))
+    (count (λ (x) (eq? x 'loop))
+           (for/list ([board BOARDS])
+             (let ([BOUNDS (get-bounds board)]
+                   [OBSTRUCTIONS (get-obstructions board)]
+                   [GUARD (get-guard board)]
+                   [POSITIONS (mutable-set)])
+               (update-guard-2 GUARD OBSTRUCTIONS POSITIONS BOUNDS))))))
 
 (part-B test)
 (part-B data)

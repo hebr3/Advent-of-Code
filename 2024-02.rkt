@@ -16,7 +16,7 @@
 8 6 4 4 1
 1 3 6 7 9")
 
-(define (str->lon str)
+(define (str->pair str)
   (map string->number (string-split str " ")))
 
 (define (increasing? L)
@@ -29,7 +29,7 @@
 
 (define (part-A L)
   (let* ([LINES (string-split L "\n")]
-         [LIST-OF-NUMBERS (map str->lon LINES)]
+         [LIST-OF-NUMBERS (map str->pair LINES)]
          [VALID-LIST (map valid-report? LIST-OF-NUMBERS)])
     (count (λ (x) x) VALID-LIST)))
          
@@ -59,7 +59,7 @@
 
 (define (part-B L)
   (let* ([LINES (string-split L "\n")]
-         [LIST-OF-NUMBERS (map str->lon LINES)]
+         [LIST-OF-NUMBERS (map str->pair LINES)]
          [VALID-LIST (map valid-report-v2? LIST-OF-NUMBERS)])
     (count (λ (x) x) VALID-LIST)))
 

@@ -1,8 +1,6 @@
-#lang racket/base
-(require racket/list)
-(require racket/string)
+#lang racket
+(require data/queue)
 (require (only-in "util.rkt" input->data tap point))
-(require "util-matrix.rkt")
 
 (define data (input->data "input/2023-23.txt"))
 
@@ -32,8 +30,6 @@
 
 ;;
 
-(define true-longest-path 0)
-
 (define (longest-path-DFS graph start end visited current-path)
   (cond
     [(equal? start end) current-path]
@@ -47,16 +43,15 @@
                         (or (empty? longest-path)
                             (> (length (flatten new-path)) (length longest-path))))
                (set! longest-path (flatten new-path))
-               (set! true-longest-path (max true-longest-path (length (flatten new-path))))
-               (println (list (current-seconds) (length longest-path) true-longest-path))))))
+               (println (list (current-seconds) (length longest-path)))))))
        longest-path)]))
 
 (define (part-A L)
-  (let* ([matrix (str->matrix L)]
-         [R (length matrix)]
-         [C (length (first matrix))]
+  (let* ([rows (string-split L "\n")]
+         [R (length rows)]
+         [C (string-length (first rows))]
          [G (make-hash)])
-    (for ([row matrix][r R])
+    (for ([row rows][r R])
       (for ([ch row][c C])
         (when (char=? ch #\.)
           (hash-set! G (point r c) (list)))))
@@ -72,7 +67,7 @@
                    (hash-has-key? G (point (add1 r) c)))
           (hash-set! G (point r c) (cons (point (add1 r) c) (hash-ref G (point r c))))
           (hash-set! G (point (add1 r) c) (cons (point r c) (hash-ref G (point (add1 r) c)))))))
-    (for ([row matrix][r R])
+    (for ([row rows][r R])
       (for ([ch row][c C])
         (let ([pt (point r c)]
               [up (point (sub1 r) c)]
@@ -93,7 +88,7 @@
           (hash-set! G pt (cons down '()))))))
 
     (define (print-path lop)
-      (for ([row matrix][r R])
+      (for ([row rows][r R])
         (for ([ch row][c C])
           (if (member (point r c) lop)
               (display #\O)
@@ -113,8 +108,8 @@
   (let ([new-L (string-replace (string-replace (string-replace L ">" ".") "<" ".") "v" ".")])
     (part-A new-L)))
 
-;(part-B test)
-;(part-B data)
+(part-B test)
+(part-B data)
 
 
 
