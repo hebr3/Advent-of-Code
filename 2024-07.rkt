@@ -36,8 +36,8 @@
            (iter (rest L) (* acc (first L)))]))
       (iter (rest parts) (first parts))
       (if (set-member? RESULTS val)
-           val
-           0))))
+          val
+          0))))
 
 (define (part-A L)
   (let* ([LINES (string-split L "\n")]
@@ -67,14 +67,15 @@
            (iter (rest L) (barbar acc (first L)))]))
       (iter (rest parts) (first parts))
       (if (set-member? RESULTS val)
-           val
-           0))))
+          val
+          0))))
 
 (define (part-B L)
   (let* ([LINES (string-split L "\n")]
          [EQUATIONS (map parse-line LINES)])
-    (for/sum ([eq EQUATIONS])
-      (test-equation-2 eq))))
+    (for/sum ([f (for/list ([eq EQUATIONS])
+                   (future (λ () (test-equation-2 eq))))])
+      (touch f))))
 
 (part-B test)
 (part-B data)

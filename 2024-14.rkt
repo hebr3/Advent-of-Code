@@ -104,10 +104,11 @@ p=9,5 v=-3,-3
 
   (define (draw-lor lor)
     (define background (empty-scene X-MAX Y-MAX))
+    (define dot (square 1 'solid 'black))
     (for ([r lor])
       (match-let ([(robot ix iy dx dy) r])
         (set! background
-              (place-image (square 1 'solid 'black) ix iy background))))
+              (place-image dot ix iy background))))
     background)
   
   (for/list ([i vertical-poi])

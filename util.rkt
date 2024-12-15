@@ -1,6 +1,5 @@
-#lang racket
-(require threading)
-(require racket/match)
+#lang racket/base
+(require racket/string)
 
 ;; Displays the expression before the value of the expression
 ;; (-> expr expr)
@@ -12,11 +11,8 @@
 ;; takes a filename and returns the file contents as a String
 ;; (-> String String)
 (define (input->data filename)
-  (~> filename
-      (open-input-file #:mode 'text)
-      (read-line 'return-linefeed)
-      ))
-
+  (read-line (open-input-file filename #:mode 'text) 'return-linefeed))
+  
 ;; (-> String (Listof String))
 (define (parse-lines str)
   (string-split str "\n"))

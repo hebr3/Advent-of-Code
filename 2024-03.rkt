@@ -12,7 +12,7 @@
 (define test "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))")
 
 (define mul-pattern
-  (pregexp "mul\\((\\d{1,3}),(\\d{1,3})\\)"))
+  #px"mul\\((\\d{1,3}),(\\d{1,3})\\)")
 
 (define (parse-mul str)
   (match-let ([(list a b) (string-split str #rx"mul\\(|,|\\)")])
@@ -32,7 +32,7 @@
 (define test2 "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))")
 
 (define mul-pattern2
-  (pregexp "mul\\((\\d{1,3}),(\\d{1,3})\\)|don't\\(\\)|do\\(\\)"))
+  #px"mul\\((\\d{1,3}),(\\d{1,3})\\)|don't\\(\\)|do\\(\\)")
 
 (define (drop-between L)
   (define (iter L* acc check)
