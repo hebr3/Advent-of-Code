@@ -3,10 +3,8 @@
 (require 2htdp/image)
 
 (define (input->data filename)
-  (~> filename
-      (open-input-file #:mode 'text)
-      (read-line 'return-linefeed)
-      ))
+  (with-input-from-file filename
+    (λ () (port->string (current-input-port)))))
 
 (define data (input->data "input/2024-14.txt"))
 
