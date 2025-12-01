@@ -21,16 +21,17 @@ R14
 L82")
 
 ;; Helper Function
-(define (str->num str)
+(define (line->num str)
+  (define L? (char=? (string-ref str 0) #\L))
   (define N (string->number (substring str 1)))
-  (if (string=? (substring str 0 1) "R")
-      N
-      (- 0 N)))
+  (cond
+    [L? (- 0 N)]
+    [else N]))
 
 ;; Main Function
 (define (part-A input)
   (define lines (string-split input "\n"))
-  (define numbers (map str->num lines))
+  (define numbers (map line->num lines))
   (let ([result 50][vals '()])
     (for ([n numbers])
       (set! result (modulo (+ result n) 100))
@@ -46,19 +47,15 @@ L82")
   (define lines (string-split input "\n"))
   (let ([dial 50][zeroes 0])
     (for ([line lines])
-      (define D (substring line 0 1))
-      (define NUM (string->number (substring line 1)))
-      (cond
-        [(string=? "L" D)
-         (for ([i NUM])
-           (set! dial (modulo (sub1 dial) 100))
-           (when (zero? dial)
-             (set! zeroes (add1 zeroes))))]
-        [else
-         (for ([i NUM])
-           (set! dial (modulo (add1 dial) 100))
-           (when (zero? dial)
-             (set! zeroes (add1 zeroes))))]))
+      (define NUM (line->num line))
+      (for ([i (in-range (abs NUM))])
+        (cond
+          [(< NUM 0)
+           (set! dial (modulo (sub1 dial) 100))]
+          [else
+           (set! dial (modulo (add1 dial) 100))])
+        (when (zero? dial)
+          (set! zeroes (add1 zeroes)))))
     zeroes))
 
 (part-B test)
