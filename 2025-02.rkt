@@ -19,58 +19,16 @@
   (map parse-range (string-split input ",")))
 
 (define (check? num)
-  (let* ([str (number->string num)]
-         [len (string-length str)])
-    (string=? (substring str 0 (floor (/ len 2)))
-              (substring str (floor (/ len 2))))))
-
-(define (split-twos str)
-  (for/list ([i (in-range (floor (/ (string-length str) 2)))])
-    (list->string (list (string-ref str (+ 0 (* 2 i)))
-                        (string-ref str (+ 1 (* 2 i)))))))
-
-(define (split-threes str)
-  (for/list ([i (in-range (floor (/ (string-length str) 3)))])
-    (list->string (list (string-ref str (+ 0 (* 3 i)))
-                        (string-ref str (+ 1 (* 3 i)))
-                        (string-ref str (+ 2 (* 3 i)))))))
-
-(define (split-fours str)
-  (for/list ([i (in-range (floor (/ (string-length str) 4)))])
-    (list->string (list (string-ref str (+ 0 (* 4 i)))
-                        (string-ref str (+ 1 (* 4 i)))
-                        (string-ref str (+ 2 (* 4 i)))
-                        (string-ref str (+ 3 (* 4 i)))))))
-
-(define (split-fives str)
-  (for/list ([i (in-range (floor (/ (string-length str) 5)))])
-    (list->string (list (string-ref str (+ 0 (* 5 i)))
-                        (string-ref str (+ 1 (* 5 i)))
-                        (string-ref str (+ 2 (* 5 i)))
-                        (string-ref str (+ 3 (* 5 i)))
-                        (string-ref str (+ 4 (* 5 i)))))))
-
-(define (chunk str n)
-  (for/list ([i (in-range 0 (floor (/ (string-length str) n)))])
-    (substring str (* i n) (+ (* i n) n))))
-
-(define (repeated? str n)
-  (let ([chunks (chunk str n)])
-    (= 1 (set-count (list->set chunks)))))
+  (regexp-match? #px"^(\\d{1,})\\1$" (number->string num)))
 
 (define (check-2? num)
-  (let* ([str (number->string num)]
-         [len (string-length str)])
-    (or (and (< 1 len)
-             (= 1 (set-count (list->set (string->list str)))))
-        (and (member len (list 4 6 8 10 12 14 16 18 20))
-             (repeated? str 2))
-        (and (member len (list 6 9 12))
-             (repeated? str 3))
-        (and (member len (list 8 12 16))
-             (repeated? str 4))
-        (and (member len (list 10 15 20))
-             (repeated? str 5)))))
+  (regexp-match? #px"^(\\d+?)\\1+$" (number->string num)))
+
+(define (valid-length? num)
+  (define len (string-length (number->string num)))
+  (or (even? len)
+      (zero? (modulo len 3))
+      (zero? (modulo len 5))))
 
 ;; Main Function
 (define (part-A input)
@@ -87,7 +45,7 @@
 (define (part-B input)
   (define ranges (parse-input input))
   (for/sum ([r ranges])
-    (for/sum ([i (in-range (first r) (add1 (second r)))])
+    (for/sum ([i (in-range (first r) (add1 (second r)))] #:when (valid-length? i))
       (if (check-2? i) i 0))))
 
 (part-B test)
