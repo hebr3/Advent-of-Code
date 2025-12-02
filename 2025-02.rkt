@@ -30,12 +30,22 @@
       (zero? (modulo len 3))
       (zero? (modulo len 5))))
 
+(define (parallel-range-sum ranges check-fn)
+  (define threads
+    (for/list ([r ranges])
+      (thread
+       #:pool 'own
+       #:keep 'results
+       (λ ()
+         (for/sum ([i (in-range (first r) (add1 (second r)))] #:when (valid-length? i))
+           (if (check-fn i) i 0))))))
+  (for/sum ([t threads])
+    (thread-wait t)))
+
 ;; Main Function
 (define (part-A input)
   (define ranges (parse-input input))
-  (for/sum ([r ranges])
-    (for/sum ([i (in-range (first r) (add1 (second r)))])
-      (if (check? i) i 0))))
+  (parallel-range-sum ranges check?))
 
 (part-A test)
 (part-A data)
@@ -44,9 +54,7 @@
 
 (define (part-B input)
   (define ranges (parse-input input))
-  (for/sum ([r ranges])
-    (for/sum ([i (in-range (first r) (add1 (second r)))] #:when (valid-length? i))
-      (if (check-2? i) i 0))))
+  (parallel-range-sum ranges check-2?))
 
 (part-B test)
 (part-B data)
