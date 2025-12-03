@@ -1,7 +1,5 @@
 #lang racket
 
-(require data/heap)
-
 (define (input->data filename)
   (with-input-from-file filename
     (λ () (port->string (current-input-port)))))
@@ -28,15 +26,25 @@ L82")
     [L? (- 0 N)]
     [else N]))
 
+(struct Dial [value count] #:transparent)
+
+(define (turn-dial num dial)
+  (let* ([old-value (Dial-value dial)]
+         [old-count (Dial-count dial)]
+         [new-value (modulo (+ old-value num) 100)]
+         [new-count (if (zero? new-value) (add1 old-count) old-count)])
+    (Dial new-value new-count)))
+
+(define (explode-list-of-numbers lon)
+  (flatten
+   (for/list ([num lon])
+     (make-list (abs num) (if (negative? num) -1 1)))))
+
 ;; Main Function
 (define (part-A input)
   (define lines (string-split input "\n"))
   (define numbers (map line->num lines))
-  (let ([result 50][vals '()])
-    (for ([n numbers])
-      (set! result (modulo (+ result n) 100))
-      (set! vals (cons result vals)))
-    (count zero? vals)))
+  (foldl turn-dial (Dial 50 0) numbers))
 
 (part-A test)
 (part-A data)
@@ -45,18 +53,9 @@ L82")
 
 (define (part-B input)
   (define lines (string-split input "\n"))
-  (let ([dial 50][zeroes 0])
-    (for ([line lines])
-      (define NUM (line->num line))
-      (for ([i (in-range (abs NUM))])
-        (cond
-          [(< NUM 0)
-           (set! dial (modulo (sub1 dial) 100))]
-          [else
-           (set! dial (modulo (add1 dial) 100))])
-        (when (zero? dial)
-          (set! zeroes (add1 zeroes)))))
-    zeroes))
+  (define numbers (map line->num lines))
+  (define exploded (explode-list-of-numbers numbers))
+  (foldl turn-dial (Dial 50 0) exploded))
 
 (part-B test)
 (part-B data)
