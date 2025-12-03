@@ -1,7 +1,5 @@
 #lang racket
 
-(require data/heap)
-
 (define (input->data filename)
   (with-input-from-file filename
     (λ () (port->string (current-input-port)))))
