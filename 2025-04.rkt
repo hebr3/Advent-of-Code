@@ -26,30 +26,27 @@
 
 (define (string->graph str)
   (define H (mutable-set))
-  (for ([line (string-split str "\n")][row (in-naturals)])
-    (for ([ch line][col (in-naturals)])
+  (for ([line (string-split str "\n")]
+        [row (in-naturals)])
+    (for ([ch line]
+          [col (in-naturals)])
       (when (char=? #\@ ch)
         (set-add! H (point col row)))))
   H)
 
-(define (check-graph G)
+(define (neighbor-count G k)
+  (match-define (point x y) k)
+  (for*/sum ([i '(-1 0 1)]
+             [j '(-1 0 1)]
+             #:when (not (= 0 i j)))
+    (if (set-member? G (point (+ x i) (+ y j))) 1 0)))
+
+(define (find-points-with-neighbors-less G val)
   (define keys (set->list G))
-  (define (neighbor-count k)
-    (match-let ([(point x y) k])
-      (let ([N  (point (+ x 0) (- y 1))]
-            [NE (point (+ x 1) (- y 1))]
-            [E  (point (+ x 1) (+ y 0))]
-            [SE (point (+ x 1) (+ y 1))]
-            [S  (point (+ x 0) (+ y 1))]
-            [SW (point (- x 1) (+ y 1))]
-            [W  (point (- x 1) (+ y 0))]
-            [NW (point (- x 1) (- y 1))])
-        (for/sum ([p (list N NE E SE S SW W NW)])
-          (if (set-member? G p) 1 0)))))
-  (define H (make-hash))
+  (define H (mutable-set))
   (for ([key keys])
-    (when (< (neighbor-count key) 4)
-      (hash-set! H key #t)))
+    (when (< (neighbor-count G key) val)
+      (set-add! H key)))
   H)
 
 (define (print-graph G)
@@ -64,13 +61,24 @@
     (displayln ""))
   (displayln ""))
 
+(define (shrink-graph! g)
+  (define open (find-points-with-neighbors-less g 4))
+  (define open-keys (set->list open))
+  (cond
+    [(empty? open-keys) g]
+    [else
+     (for ([key open-keys])
+       (set-remove! g key))
+     ;(print-graph g)
+     (shrink-graph! g)]))
+
 ;; Main Function
 (define (part-A input)
   (define G (string->graph input))
   ;(print-graph G)
-  (define less-4 (check-graph G))
+  (define less-4 (find-points-with-neighbors-less G 4))
   ;(print-graph less-4)
-  (length (hash-keys less-4)))
+  (length (set->list less-4)))
 
 (check-equal? (part-A test) 13)
 
@@ -81,17 +89,7 @@
 (define (part-B input)
   (define G (string->graph input))
   (define init-rolls (set->list G))
-  (define (iter g)
-    (define open (check-graph g))
-    (define open-keys (hash-keys open))
-    (cond
-      [(empty? open-keys) g]
-      [else
-       (for ([key open-keys])
-         (set-remove! g key))
-       ;(print-graph g)
-       (iter g)]))
-  (iter G)
+  (shrink-graph! G)
   (define final-rolls (set->list G))
   (- (length init-rolls)
      (length final-rolls)))
