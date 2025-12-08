@@ -58,24 +58,25 @@
         (when (char=? #\^ ch)
           (set-add! splitters (point col row)))))
     (board start splitters (length lines))))
+  
 
 ;; Main Function
 (define (part-A input)
-  (define init-board (input->board input))
+  (match-define (board start splitters board-length) (input->board input))
   (define beams (mutable-set))
   (define (tick! count)
     (define current (filter (λ (pt) (= count (point-y pt))) (set->list beams)))
     (cond
-      [(= (board-length init-board) count) beams]
+      [(= board-length count) beams]
       [else
        (for ([pt current])
-         (if (point-below? pt (board-splitters init-board))
+         (if (point-below? pt splitters)
              (point-split! pt beams)
              (point-down! pt beams)))
        (tick! (add1 count))]))
-  (point-down! (board-start init-board) beams)
+  (point-down! start beams)
   (tick! 1)
-  (for/sum ([splitter (board-splitters init-board)])
+  (for/sum ([splitter splitters])
     (if (point-above? splitter beams) 1 0)))
 
 (check-equal? (part-A test) 21)
@@ -85,8 +86,25 @@
 ;;
 
 (define (part-B input)
-  input)
+  (match-define (board start splitters board-length) (input->board input))
+  (define lookup (make-hash))
+  (define (solve pt)
+    (hash-ref! lookup pt (λ () (solve! pt))))
+  (define (solve! pt)
+    (match-define (point x y) pt)
+    (define down (point x (add1 y)))
+    (cond
+      [(>= y board-length)
+       (hash-set! lookup pt 1)
+        1]
+      [(set-member? splitters down)
+       (define left (solve (point (sub1 x) (add1 y))))
+       (define right (solve (point (add1 x) (add1 y))))
+       (+ left right)]
+      [else
+       (solve down)]))
+  (solve start))
 
 (check-equal? (part-B test) 40)
 
-;(part-B data)
+(part-B data)
