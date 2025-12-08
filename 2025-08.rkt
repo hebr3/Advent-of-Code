@@ -34,6 +34,7 @@
 
 ;; Helper Function
 (struct point [x y z] #:transparent)
+(struct edge [p1 p2 dist] #:transparent)
 
 (define (distance p1 p2)
   (match-define (point x1 y1 z1) p1)
@@ -50,24 +51,43 @@
       (map string->number (string-split line ",")))
     (point x y z)))
 
+(define (all-point-pairs pts)
+  (combinations pts 2))
+
+(define (all-point-pairs-with-distance pts)
+  (for*/list ([i (in-range (length pts))]
+              [j (in-range (+ i 1) (length pts))])
+    (define p1 (list-ref pts i))
+    (define p2 (list-ref pts j))
+    (edge p1 p2 (distance p1 p2))))
+
+(define (sort-edges edges)
+  (sort edges < #:key edge-dist))
+
+(define (sort-pairs-by-distance pairs)
+  (sort pairs
+        (λ (a b)
+          (< (distance (first a) (second a))
+             (distance (first b) (second b))))))
+
 (define (make-graph-from-pairs pairs)
   (define graph (make-hash))
   (for ([pair pairs])
     (match pair
-      [(cons (list p1 p2) dist)
-       (hash-update! graph p1 (λ (old) (cons p2 old)) '())
-       (hash-update! graph p2 (λ (old) (cons p1 old)) '())]))
+      [(list p1 p2)
+       (hash-update! graph p1 (λ (old) (set-add old p2)) (set))
+       (hash-update! graph p2 (λ (old) (set-add old p1)) '())]))
   graph)
 
 (define (dfs graph start)
-  (define visited (make-hash))
+  (define visited (mutable-set))
   (define (visit p)
-    (unless (hash-ref visited p #f)
-      (hash-set! visited p #t)
-      (for ([n (hash-ref graph p '())])
+    (unless (set-member? visited p)
+      (set-add! visited p)
+      (for ([n (hash-ref graph p (set))])
         (visit n))))
   (visit start)
-  (hash-keys visited))
+  (set->list visited))
 
 (define (connected-components graph)
   (define seen (make-hash))
@@ -79,21 +99,42 @@
       (set! comps (cons comp comps))))
   comps)
 
+(define (add-edge! g p1 p2)
+  (hash-update! g p1 (λ (old) (cons p2 old)) '())
+  (hash-update! g p2 (λ (old) (cons p1 old)) '()))
+
+(define (connected? g)
+  (define nodes (hash-keys g))
+  (cond
+    [(empty? nodes) #t]
+    [else
+     (= (length (dfs g (first nodes)))
+        (length nodes))]))
+
+(define (make-empty-graph points)
+  (define g (make-hash))
+  (for ([p points])
+    (hash-set! g p '()))
+  g)
+
+(define (first-edge-that-connects points edges)
+  (define g (make-empty-graph points))
+
+  (let ([stop #f])
+    (for ([pair edges] #:break (connected? g))
+      (match pair
+        [(list p1 p2)
+         (add-edge! g p1 p2)
+         (when (connected? g)
+           (set! stop (list p1 p2)))]))
+    stop))
+
 ;; Main Function
 (define (part-A input len)
   (define points (parse-input input))
-  (define H (make-hash))
-  (define (add! p1 p2)
-    (define pair (if (string<? (format "~a" p1) (format "~a" p2))
-                     (list p1 p2)
-                     (list p2 p1)))
-    (when (not (hash-has-key? H pair))
-      (hash-set! H pair (distance p1 p2))))
-  (for ([p1 points][i (in-naturals)])
-    (for ([p2 (drop points (add1 i))])
-      (add! p1 p2)))
-  (define distances (hash->list H))
-  (define graph (make-graph-from-pairs (take (sort distances < #:key cdr) len)))
+  (define pairs (all-point-pairs points))
+  (define sorted-pairs (sort-pairs-by-distance pairs))
+  (define graph (make-graph-from-pairs (take sorted-pairs len)))
   (define connected (connected-components graph))
   (apply * (take (sort (map length connected) >) 3)))
 
@@ -104,8 +145,13 @@
 ;;
 
 (define (part-B input)
-  input)
+  (define points (parse-input input))
+  (define pairs (all-point-pairs points))
+  (define sorted-pairs (sort-pairs-by-distance pairs))
+  (define final (first-edge-that-connects points sorted-pairs))
+  (* (point-x (first final))
+     (point-x (second final))))
 
 (check-equal? (part-B test) 25272)
 
-;(part-B data)
+(part-B data)
